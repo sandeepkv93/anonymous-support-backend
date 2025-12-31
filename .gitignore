@@ -42,7 +42,7 @@ build/
 *.sqlite
 
 # Generated files
-gen/
+# gen/  # Commented out - committing generated files for CI
 
 # Temporary files
 tmp/
