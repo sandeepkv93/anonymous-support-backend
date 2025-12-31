@@ -76,8 +76,9 @@ func (r *RealtimeRepository) AddToFeed(ctx context.Context, feedKey, postID stri
 	}).Err()
 }
 
-func (r *RealtimeRepository) GetFeed(ctx context.Context, feedKey string, offset, limit int) ([]string, error) {
-	return r.client.ZRevRange(ctx, feedKey, int64(offset), int64(offset+limit-1)).Result()
+func (r *RealtimeRepository) GetFeed(ctx context.Context, userID string, limit int) ([]string, error) {
+	feedKey := fmt.Sprintf("feed:%s", userID)
+	return r.client.ZRevRange(ctx, feedKey, 0, int64(limit-1)).Result()
 }
 
 func (r *RealtimeRepository) CheckRateLimit(ctx context.Context, userID, action string, limit int, window time.Duration) (bool, error) {

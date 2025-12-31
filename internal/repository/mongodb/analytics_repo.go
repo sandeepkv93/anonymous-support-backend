@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/yourorg/anonymous-support/internal/domain"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -94,6 +95,6 @@ func (r *AnalyticsRepository) IncrementCravings(ctx context.Context, userID stri
 	return err
 }
 
-func (r *AnalyticsRepository) AddMilestone(ctx context.Context, userID string, milestone domain.Milestone) error {
+func (r *AnalyticsRepository) AddMilestone(ctx context.Context, userID uuid.UUID, name string) error {
 	return nil
 }

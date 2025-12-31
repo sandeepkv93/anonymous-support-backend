@@ -15,7 +15,9 @@ import (
 	"github.com/yourorg/anonymous-support/internal/handler/rpc"
 	"github.com/yourorg/anonymous-support/internal/handler/websocket"
 	"github.com/yourorg/anonymous-support/internal/middleware"
+	"github.com/yourorg/anonymous-support/internal/pkg/encryption"
 	"github.com/yourorg/anonymous-support/internal/pkg/jwt"
+	"github.com/yourorg/anonymous-support/internal/pkg/moderator"
 	"github.com/yourorg/anonymous-support/internal/repository"
 	"github.com/yourorg/anonymous-support/internal/repository/mongodb"
 	"github.com/yourorg/anonymous-support/internal/repository/postgres"
@@ -54,8 +56,9 @@ type Application struct {
 	AnalyticsService  *service.AnalyticsService
 
 	// Infrastructure
-	JWTManager *jwt.JWTManager
-	WSHub      *websocket.Hub
+	JWTManager        *jwt.JWTManager
+	EncryptionManager *encryption.Manager
+	WSHub             *websocket.Hub
 
 	// HTTP Server
 	HTTPServer *http.Server
@@ -76,6 +79,13 @@ func New(cfg *config.Config, logger *zap.Logger, postgresDB *sqlx.DB, mongoDB *m
 
 	// Initialize JWT manager
 	app.JWTManager = jwt.NewJWTManager(cfg.JWT.Secret, cfg.JWT.AccessExpiry, cfg.JWT.RefreshExpiry)
+
+	// Initialize encryption manager
+	encManager, err := encryption.NewManager(cfg.Encryption.Key)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create encryption manager: %w", err)
+	}
+	app.EncryptionManager = encManager
 
 	// Initialize WebSocket hub
 	app.WSHub = websocket.NewHub(app.JWTManager, logger)
@@ -110,44 +120,38 @@ func (a *Application) wireRepositories() {
 func (a *Application) wireServices() error {
 	// Auth service
 	a.AuthService = service.NewAuthService(
-		a.UserRepo,
-		a.SessionRepo,
+		a.UserRepo.(*postgres.UserRepository),
+		a.SessionRepo.(*redisrepo.SessionRepository),
 		a.JWTManager,
 		a.EncryptionManager,
 	)
 
 	// User service
 	a.UserService = service.NewUserService(
-		a.UserRepo,
-		a.AnalyticsRepo,
+		a.UserRepo.(*postgres.UserRepository),
+		a.AnalyticsRepo.(*mongodb.AnalyticsRepository),
 	)
 
 	// Post service
+	contentFilter := moderator.NewContentFilter(a.Config.Moderation.ProfanityFilterLevel)
 	a.PostService = service.NewPostService(
-		a.PostRepo,
-		a.RealtimeRepo,
-		a.WSHub,
-		a.Config,
-		a.Logger,
+		a.PostRepo.(*mongodb.PostRepository),
+		a.RealtimeRepo.(*redisrepo.RealtimeRepository),
+		contentFilter,
 	)
 
 	// Support service
 	a.SupportService = service.NewSupportService(
-		a.SupportRepo,
-		a.PostRepo,
-		a.UserRepo,
-		a.RealtimeRepo,
-		a.WSHub,
-		a.Config,
-		a.Logger,
+		a.SupportRepo.(*mongodb.SupportRepository),
+		a.PostRepo.(*mongodb.PostRepository),
+		a.UserRepo.(*postgres.UserRepository),
+		a.RealtimeRepo.(*redisrepo.RealtimeRepository),
 	)
 
 	// Circle service
 	a.CircleService = service.NewCircleService(
-		a.CircleRepo,
-		a.UserRepo,
-		a.PostRepo,
-		a.Logger,
+		a.CircleRepo.(*postgres.CircleRepository),
+		a.PostRepo.(*mongodb.PostRepository),
 	)
 
 	// Moderation service
