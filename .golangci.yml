@@ -21,10 +21,10 @@ linters:
     - noctx
     - rowserrcheck
     - sqlclosecheck
-    - exportloopref
   disable:
     - gocyclo
     - gosec
+    - exportloopref
 
 linters-settings:
   gocyclo:
