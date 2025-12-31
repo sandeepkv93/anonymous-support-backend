@@ -6,73 +6,203 @@
 
 A production-ready backend system for an anonymous peer support mobile application where users can post real-time struggles with addictions/cravings and receive immediate community support.
 
-**🎯 Production-Ready Features:**
-- ✅ Connect-RPC API with full service implementation
-- ✅ Comprehensive configuration validation
-- ✅ Structured logging with request correlation IDs
-- ✅ Advanced health checks (liveness, readiness, dependency status)
-- ✅ Prometheus metrics endpoint
-- ✅ Panic recovery with stack traces
-- ✅ Database connection pooling (Postgres, MongoDB, Redis)
-- ✅ JWT hardening (issuer, audience, not-before validation)
-- ✅ RBAC authorization system
-- ✅ CI/CD pipeline (GitHub Actions)
-- ✅ Kubernetes deployment manifests
-- ✅ Production-grade middleware stack
+## Production-Ready Features
 
-## 🚀 Features
+- Connect-RPC API with full service implementation
+- Comprehensive configuration validation
+- Structured logging with request correlation IDs
+- Advanced health checks (liveness, readiness, dependency status)
+- Prometheus metrics endpoint
+- Panic recovery with stack traces
+- Database connection pooling (Postgres, MongoDB, Redis)
+- JWT hardening (issuer, audience, not-before validation)
+- RBAC authorization system
+- OAuth2 authentication (Google Sign-In)
+- Audit logging for security events
+- Distributed tracing support
+- CI/CD pipeline (GitHub Actions)
+- Kubernetes deployment manifests
+- Production-grade middleware stack
+- Soft delete functionality
+- Token rotation for enhanced security
+- Retry mechanisms with exponential backoff
+- Secrets management
+- Push notifications support
 
-- **Anonymous & Authenticated Users**: Support for both anonymous users and email-based accounts
-- **Real-time Communication**: WebSocket-based real-time updates for posts and responses
-- **Support Circles**: Create and join topic-specific support communities
-- **Post Types**: SOS alerts, check-ins, victories, and questions
-- **Quick Support**: One-tap support buttons for immediate encouragement
-- **Strength Points**: Gamification to encourage helpful participation
-- **Content Moderation**: Automatic flagging of harmful content
-- **User Analytics**: Track streaks, cravings, and recovery progress
-- **Rate Limiting**: Prevent spam and abuse
-- **Secure**: JWT authentication, encrypted sensitive data, HTTPS ready
+## Features
 
-## 🏗️ Architecture
+**Authentication & Authorization**
+- Anonymous user registration
+- Email-based authentication
+- OAuth2/Google Sign-In integration
+- JWT token management with rotation
+- Role-based access control (RBAC)
 
+**Real-time Communication**
+- WebSocket-based real-time updates for posts and responses
+- Live feed synchronization
+- Real-time notifications
+
+**Support System**
+- Support Circles: Create and join topic-specific support communities
+- Post Types: SOS alerts, check-ins, victories, and questions
+- Quick Support: One-tap support buttons for immediate encouragement
+- Strength Points: Gamification to encourage helpful participation
+- Voice note responses
+
+**Content & Security**
+- Content Moderation: Automatic flagging of harmful content
+- User blocking system
+- Content reporting
+- Audit logging for security events
+- Soft delete for data recovery
+
+**Analytics & Tracking**
+- User streak tracking
+- Craving resistance metrics
+- Recovery progress analytics
+- Support statistics
+
+**Infrastructure**
+- Rate limiting to prevent spam and abuse
+- Encrypted sensitive data (AES-256)
+- MongoDB migrations framework
+- Database transaction support
+- Distributed caching
+- Seed data for development
+
+## Architecture
+
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        Mobile[Mobile App]
+        Web[Web Client]
+    end
+
+    subgraph "API Gateway Layer"
+        ConnectRPC[Connect-RPC Handlers]
+        WSManager[WebSocket Manager]
+        Health[Health Endpoints]
+        Metrics[Prometheus Metrics]
+    end
+
+    subgraph "Middleware Layer"
+        Recovery[Panic Recovery]
+        RequestID[Request ID]
+        MetricsMW[Metrics Middleware]
+        CORS[CORS]
+        Logging[Logging]
+        Auth[JWT Auth]
+        RateLimit[Rate Limiting]
+        Tracing[Distributed Tracing]
+    end
+
+    subgraph "Service Layer"
+        AuthSvc[Auth Service]
+        UserSvc[User Service]
+        PostSvc[Post Service]
+        SupportSvc[Support Service]
+        CircleSvc[Circle Service]
+        ModerationSvc[Moderation Service]
+        AnalyticsSvc[Analytics Service]
+        NotificationSvc[Notification Service]
+    end
+
+    subgraph "Repository Layer"
+        PostgresRepo[Postgres Repositories]
+        MongoRepo[MongoDB Repositories]
+        RedisRepo[Redis Repositories]
+    end
+
+    subgraph "Data Layer"
+        Postgres[(PostgreSQL<br/>Users, Circles<br/>Moderation, Audit)]
+        MongoDB[(MongoDB<br/>Posts, Responses<br/>Analytics)]
+        Redis[(Redis<br/>Sessions, Cache<br/>Real-time)]
+    end
+
+    subgraph "External Services"
+        OAuth2[Google OAuth2]
+        PushSvc[Push Notification Service]
+    end
+
+    Mobile --> ConnectRPC
+    Web --> ConnectRPC
+    Mobile --> WSManager
+    Web --> WSManager
+
+    ConnectRPC --> Recovery
+    WSManager --> Recovery
+    Recovery --> RequestID
+    RequestID --> MetricsMW
+    MetricsMW --> CORS
+    CORS --> Logging
+    Logging --> Auth
+    Auth --> RateLimit
+    RateLimit --> Tracing
+
+    Tracing --> AuthSvc
+    Tracing --> UserSvc
+    Tracing --> PostSvc
+    Tracing --> SupportSvc
+    Tracing --> CircleSvc
+    Tracing --> ModerationSvc
+    Tracing --> AnalyticsSvc
+    Tracing --> NotificationSvc
+
+    AuthSvc --> PostgresRepo
+    AuthSvc --> RedisRepo
+    AuthSvc --> OAuth2
+
+    UserSvc --> PostgresRepo
+    UserSvc --> MongoRepo
+
+    PostSvc --> MongoRepo
+    PostSvc --> RedisRepo
+
+    SupportSvc --> MongoRepo
+    SupportSvc --> PostgresRepo
+    SupportSvc --> RedisRepo
+
+    CircleSvc --> PostgresRepo
+    CircleSvc --> MongoRepo
+
+    ModerationSvc --> PostgresRepo
+    ModerationSvc --> MongoRepo
+
+    AnalyticsSvc --> MongoRepo
+
+    NotificationSvc --> PushSvc
+
+    PostgresRepo --> Postgres
+    MongoRepo --> MongoDB
+    RedisRepo --> Redis
 ```
-┌─────────────────────────────────────────────────────────┐
-│                     API Gateway Layer                   │
-│  (Connect-RPC Handlers + WebSocket Manager)             │
-└─────────────────────────────────────────────────────────┘
-                            │
-┌─────────────────────────────────────────────────────────┐
-│                    Service Layer                        │
-│  (Business Logic - User, Post, Support, Moderation)     │
-└─────────────────────────────────────────────────────────┘
-                            │
-┌─────────────────────────────────────────────────────────┐
-│                  Repository Layer                       │
-│  (Data Access - Postgres, Redis, MongoDB)               │
-└─────────────────────────────────────────────────────────┘
-```
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Language**: Go 1.24+
-- **API Framework**: Connect-RPC (type-safe gRPC alternative)
+- **API Framework**: Connect-RPC (type-safe gRPC alternative with HTTP/2)
 - **Real-time**: WebSockets (gorilla/websocket)
 - **Databases**:
-  - PostgreSQL (users, circles, moderation)
-  - MongoDB (posts, responses, analytics)
-  - Redis (sessions, real-time, caching)
-- **Authentication**: JWT tokens
-- **Additional**: Zap (logging), Viper (config), golang-migrate (migrations)
+  - PostgreSQL 16+ (users, circles, moderation, audit logs)
+  - MongoDB 7+ (posts, responses, analytics)
+  - Redis 7+ (sessions, real-time, caching)
+- **Authentication**: JWT tokens, OAuth2 (Google)
+- **Observability**: Zap (logging), Prometheus (metrics), OpenTelemetry (tracing)
+- **Configuration**: Viper
+- **Migrations**: golang-migrate
 
-## 📋 Prerequisites
+## Prerequisites
 
 - Go 1.24 or higher
+- [Task](https://taskfile.dev/) - Task runner (install: `go install github.com/go-task/task/v3/cmd/task@latest`)
 - Docker & Docker Compose
 - PostgreSQL 16
 - MongoDB 7
 - Redis 7
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Clone the Repository
 
@@ -88,7 +218,6 @@ cd anonymous-support-backend
 ```
 
 This will:
-
 - Create `.env` file from template
 - Install required tools (buf, migrate)
 - Start infrastructure services (Postgres, MongoDB, Redis)
@@ -100,63 +229,172 @@ This will:
 **Option A: Run locally**
 
 ```bash
-make run
+task run
 ```
 
 **Option B: Run with Docker**
 
 ```bash
-make docker-up
+task docker-compose-up
+```
+
+**Option C: Run with seed data**
+
+```bash
+task seed
+task run
+```
+
+**Option D: Run with hot reload (development)**
+
+```bash
+task dev
 ```
 
 The server will start on `http://localhost:8080`
 
-## 📚 Available Commands
+## Available Commands
 
+Use `task --list` to see all available commands. Here are the most commonly used:
+
+**Development**
 ```bash
-make help              # Show all available commands
-make install-tools     # Install buf, migrate, and other tools
-make proto             # Generate code from proto files
-make migrate-up        # Run database migrations
-make migrate-down      # Rollback migrations
-make mongo-init        # Initialize MongoDB collections
-make run               # Run the application
-make build             # Build the application binary
-make test              # Run tests
-make docker-up         # Start all services with Docker
-make docker-down       # Stop all services
-make clean             # Clean build artifacts
+task                      # Show available tasks
+task install              # Install development dependencies
+task run                  # Build and run the application
+task dev                  # Run with hot reload (air)
+task build                # Build the application binary
+task clean                # Clean build artifacts and caches
 ```
 
-## 🗄️ Database Migrations
+**Code Quality**
+```bash
+task test                 # Run all tests with race detection
+task test-unit            # Run unit tests only
+task test-integration     # Run integration tests
+task test-coverage        # Generate coverage report (HTML)
+task lint                 # Run linters (gofmt, go vet, golangci-lint)
+task lint-fix             # Auto-fix linting issues
+task fmt                  # Format code and tidy modules
+task security             # Run security vulnerability scans
+```
+
+**Database**
+```bash
+task migrate-up           # Run database migrations
+task migrate-down         # Rollback last migration
+task migrate-create       # Create new migration (usage: task migrate-create -- migration_name)
+task seed                 # Seed database with test data
+```
+
+**Protobuf**
+```bash
+task proto                # Generate code from proto files
+```
+
+**Docker**
+```bash
+task docker-compose-up    # Start all services with docker-compose
+task docker-compose-down  # Stop all services
+task docker-compose-logs  # View logs from services
+task docker-build         # Build Docker image
+task docker-run           # Run Docker container
+```
+
+**Kubernetes**
+```bash
+task k8s-apply            # Apply Kubernetes manifests
+task k8s-delete           # Delete Kubernetes resources
+```
+
+**Utilities**
+```bash
+task deps                 # Update dependencies
+task verify               # Run all checks (fmt, lint, test, build)
+task gen-mocks            # Generate mock implementations
+```
+
+## Database Migrations
+
+### PostgreSQL Migrations
 
 Migrations are in `migrations/postgres/`:
 
-- `001_create_users` - User accounts
+- `001_create_users` - User accounts and authentication
 - `002_create_circles` - Support circles
 - `003_create_memberships` - Circle memberships
-- `004_create_blocks` - User blocking
+- `004_create_blocks` - User blocking system
 - `005_create_reports` - Content reporting
+- `006_create_audit_logs` - Security audit trail
+- `007_add_soft_delete` - Soft delete support for users, circles, and reports
 
-MongoDB collections are initialized via `migrations/mongodb/init.js`
+### MongoDB Collections
 
-## 🔌 API Endpoints
+MongoDB collections are initialized via `migrations/mongodb/init.js` and programmatic migrations in `internal/pkg/migrations/`:
+- `posts` - User posts (SOS, check-ins, victories, questions)
+- `responses` - Support responses and quick support
+- `analytics` - User analytics and streak tracking
+
+## API Endpoints
 
 ### REST Endpoints
 
-- `GET /health` - Health check endpoint
+- `GET /health` - Full dependency health check (Postgres, MongoDB, Redis)
+- `GET /health/ready` - Readiness probe for Kubernetes
+- `GET /health/live` - Liveness probe for Kubernetes
+- `GET /metrics` - Prometheus metrics endpoint
 - `WS /ws` - WebSocket connection (requires authentication)
 
-### Connect-RPC Services (to be implemented with proto generation)
+### Connect-RPC Services
 
-- **AuthService**: Registration, login, token refresh
-- **UserService**: Profile management, streak tracking
-- **PostService**: Create/read posts, feed generation
-- **SupportService**: Responses, quick support, stats
-- **CircleService**: Create/join circles, circle feeds
-- **ModerationService**: Report content, moderation queue
+All RPC services use Connect-RPC protocol and are available at `/[package].[version].[Service]/[Method]`
 
-## 🔐 Authentication
+#### AuthService (`/auth.v1.AuthService/`)
+
+- `RegisterAnonymous` - Register anonymous user with username
+- `RegisterWithEmail` - Register user with email and password
+- `Login` - Authenticate user with username/password
+- `RefreshToken` - Refresh access token
+- `Logout` - Invalidate user session
+
+#### UserService (`/user.v1.UserService/`)
+
+- `GetProfile` - Retrieve user profile
+- `UpdateProfile` - Update username or avatar
+- `GetStreak` - Get user streak and craving statistics
+- `UpdateStreak` - Update streak after relapse
+
+#### PostService (`/post.v1.PostService/`)
+
+- `CreatePost` - Create new post (SOS, check-in, victory, question)
+- `GetPost` - Retrieve post by ID
+- `GetFeed` - Get personalized feed with filters
+- `DeletePost` - Soft delete post
+- `UpdatePostUrgency` - Update urgency level
+
+#### SupportService (`/support.v1.SupportService/`)
+
+- `CreateResponse` - Add text/quick/voice response to post
+- `GetResponses` - Retrieve responses for a post
+- `QuickSupport` - Send quick support button tap
+- `GetSupportStats` - Get user support statistics
+
+#### CircleService (`/circle.v1.CircleService/`)
+
+- `CreateCircle` - Create new support circle
+- `JoinCircle` - Join existing circle
+- `LeaveCircle` - Leave circle
+- `GetCircleMembers` - List circle members
+- `GetCircleFeed` - Get circle-specific feed
+- `GetCircles` - Browse available circles
+
+#### ModerationService (`/moderation.v1.ModerationService/`)
+
+- `ReportContent` - Report post or response
+- `GetReports` - List moderation reports (admin)
+- `ModerateContent` - Take action on report (admin)
+
+## Authentication
 
 The API uses JWT bearer tokens:
 
@@ -164,11 +402,18 @@ The API uses JWT bearer tokens:
 Authorization: Bearer <access_token>
 ```
 
+**Token Lifecycle:**
 - Access tokens expire in 15 minutes
 - Refresh tokens expire in 7 days
 - Sessions are stored in Redis
+- Token rotation on refresh for enhanced security
 
-## ⚙️ Configuration
+**OAuth2 Flow:**
+- Google Sign-In supported
+- PKCE (Proof Key for Code Exchange) implementation
+- Automatic user creation on first OAuth login
+
+## Configuration
 
 Configuration is managed via environment variables. Copy `.env.example` to `.env` and customize:
 
@@ -183,6 +428,7 @@ POSTGRES_PORT=5432
 POSTGRES_USER=support_user
 POSTGRES_PASSWORD=support_pass
 POSTGRES_DB=support_db
+POSTGRES_SSL_MODE=disable
 
 # MongoDB
 MONGODB_URI=mongodb://localhost:27017
@@ -191,6 +437,8 @@ MONGODB_DB=support_db
 # Redis
 REDIS_HOST=localhost
 REDIS_PORT=6379
+REDIS_PASSWORD=
+REDIS_DB=0
 
 # JWT
 JWT_SECRET=your-super-secret-key-change-in-production
@@ -198,90 +446,211 @@ JWT_ACCESS_EXPIRY=15m
 JWT_REFRESH_EXPIRY=168h
 
 # Encryption (must be exactly 32 bytes for AES-256)
-ENCRYPTION_KEY=32-byte-encryption-key-for-aes-256
+ENCRYPTION_KEY=32-byte-encryption-key-for-aes-256-change-this-in-production
 
 # Rate Limiting
 RATE_LIMIT_POSTS_PER_HOUR=10
 RATE_LIMIT_RESPONSES_PER_HOUR=100
 
+# WebSocket
+WS_READ_BUFFER_SIZE=1024
+WS_WRITE_BUFFER_SIZE=1024
+WS_MAX_MESSAGE_SIZE=8192
+
 # Moderation
 ENABLE_AUTO_MODERATION=true
 PROFANITY_FILTER_LEVEL=strict
+
+# Timeouts
+SERVER_READ_TIMEOUT=15s
+SERVER_WRITE_TIMEOUT=15s
+SERVER_IDLE_TIMEOUT=60s
+DB_TIMEOUT=10s
+HTTP_TIMEOUT=30s
+CONTEXT_TIMEOUT=30s
+
+# OAuth2 (optional)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_REDIRECT_URL=http://localhost:8080/auth/google/callback
+
+# Tracing (optional)
+ENABLE_TRACING=false
+JAEGER_ENDPOINT=http://localhost:14268/api/traces
+
+# Notifications (optional)
+ENABLE_PUSH_NOTIFICATIONS=false
+FCM_SERVER_KEY=your-fcm-server-key
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 anonymous-support-backend/
 ├── cmd/
-│   └── server/           # Application entry point
+│   └── server/              # Application entry point
 ├── internal/
-│   ├── config/           # Configuration management
-│   ├── domain/           # Domain models
-│   ├── repository/       # Data access layer
-│   │   ├── postgres/
-│   │   ├── mongodb/
-│   │   └── redis/
-│   ├── service/          # Business logic
-│   ├── handler/          # HTTP/WebSocket handlers
-│   │   ├── connectrpc/
-│   │   └── websocket/
-│   ├── middleware/       # Auth, logging, CORS
-│   ├── pkg/              # Shared utilities
-│   │   ├── jwt/
-│   │   ├── encryption/
-│   │   ├── validator/
-│   │   └── moderator/
-│   └── proto/            # Protocol buffer definitions
-├── migrations/           # Database migrations
-│   ├── postgres/
-│   └── mongodb/
-├── scripts/              # Setup and utility scripts
-├── docker-compose.yml    # Local development stack
+│   ├── app/                 # Application bootstrap and lifecycle
+│   ├── config/              # Configuration management
+│   ├── domain/              # Domain models
+│   │   ├── user.go
+│   │   ├── post.go
+│   │   ├── support.go
+│   │   ├── circle.go
+│   │   ├── moderation.go
+│   │   └── audit.go
+│   ├── dto/                 # Data transfer objects
+│   ├── errors/              # Custom error types
+│   ├── repository/          # Data access layer
+│   │   ├── interfaces.go
+│   │   ├── postgres/        # PostgreSQL repositories
+│   │   ├── mongodb/         # MongoDB repositories
+│   │   └── redis/           # Redis repositories
+│   ├── service/             # Business logic
+│   │   ├── auth_service.go
+│   │   ├── user_service.go
+│   │   ├── post_service.go
+│   │   ├── support_service.go
+│   │   ├── circle_service.go
+│   │   ├── moderation_service.go
+│   │   ├── analytics_service.go
+│   │   └── notification_service.go
+│   ├── handler/             # HTTP/WebSocket handlers
+│   │   ├── rpc/             # Connect-RPC handlers
+│   │   ├── websocket/       # WebSocket handlers
+│   │   └── health.go        # Health check handler
+│   ├── middleware/          # HTTP middleware
+│   │   ├── auth.go
+│   │   ├── logging.go
+│   │   ├── cors.go
+│   │   ├── metrics.go
+│   │   ├── recovery.go
+│   │   ├── request_id.go
+│   │   ├── tracing.go
+│   │   ├── ratelimit.go
+│   │   └── chain.go
+│   └── pkg/                 # Shared utilities
+│       ├── jwt/             # JWT token management
+│       ├── encryption/      # AES-256 encryption
+│       ├── validator/       # Input validation
+│       ├── moderator/       # Content moderation
+│       ├── authz/           # Authorization (RBAC)
+│       ├── metrics/         # Prometheus metrics
+│       ├── tracing/         # Distributed tracing
+│       ├── oauth2/          # OAuth2 providers
+│       ├── retry/           # Retry mechanisms
+│       ├── cache/           # Cache abstraction
+│       ├── transaction/     # Transaction support
+│       ├── secrets/         # Secrets management
+│       ├── migrations/      # MongoDB migrations
+│       └── notifications/   # Push notifications
+├── proto/                   # Protocol buffer definitions
+│   ├── auth/v1/
+│   ├── user/v1/
+│   ├── post/v1/
+│   ├── support/v1/
+│   ├── circle/v1/
+│   └── moderation/v1/
+├── gen/                     # Generated code from proto files
+├── migrations/              # Database migrations
+│   ├── postgres/            # PostgreSQL migrations
+│   └── mongodb/             # MongoDB initialization
+├── k8s/                     # Kubernetes manifests
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   └── hpa.yaml
+├── scripts/                 # Setup and utility scripts
+│   ├── setup.sh
+│   ├── seed.sh
+│   └── seed.go
+├── tests/                   # Test files
+│   └── contract/
+├── docker-compose.yml       # Local development stack
 ├── Dockerfile
-├── Makefile
+├── Taskfile.yml             # Task runner configuration
+├── buf.yaml                 # Buf configuration
+├── buf.gen.yaml             # Code generation config
 └── README.md
 ```
 
-## 🧪 Testing
+## Testing
 
 ```bash
-# Run all tests
-make test
+# Run all tests with race detection
+task test
+
+# Run unit tests only
+task test-unit
+
+# Run integration tests
+task test-integration
+
+# Generate coverage report (opens in browser)
+task test-coverage
 
 # Run specific package tests
 go test -v ./internal/service/...
 
-# Run with coverage
-go test -cover ./...
+# Run contract tests
+go test -v ./tests/contract/...
 ```
 
-## 🔒 Security Features
+## Security Features
 
-- **Password Hashing**: bcrypt with cost 12
-- **Email Encryption**: AES-256 encryption for stored emails
-- **JWT Validation**: Signature verification and expiry checks
-- **Rate Limiting**: Per-user, per-endpoint rate limits
-- **Content Moderation**: Automatic profanity and harmful content detection
-- **User Blocking**: Users can block others
-- **CORS**: Configurable cross-origin policies
+**Authentication & Authorization**
+- Password hashing with bcrypt (cost 12)
+- Email encryption using AES-256
+- JWT validation with signature verification
+- Token rotation on refresh
+- OAuth2/PKCE for third-party authentication
+- RBAC for fine-grained access control
 
-## 📊 Monitoring & Observability
+**Content Security**
+- Automatic profanity and harmful content detection
+- Content reporting system
+- User blocking functionality
+- Audit logging for security events
 
-- **Structured Logging**: Zap with request correlation IDs
-- **Health Checks**:
-  - `/health` - Full dependency health check (Postgres, MongoDB, Redis)
-  - `/health/ready` - Readiness probe for Kubernetes
-  - `/health/live` - Liveness probe for Kubernetes
-- **Metrics**: Prometheus metrics at `/metrics`
-  - HTTP request metrics (total, duration, by endpoint)
-  - Database query metrics (operations, duration)
-  - WebSocket connection metrics
-  - Cache hit/miss ratios
-- **Error Tracking**: Panic recovery middleware with stack traces
-- **Request Tracking**: Request ID propagation for distributed tracing
+**Infrastructure Security**
+- Rate limiting per user and endpoint
+- CORS with configurable policies
+- Encrypted sensitive data at rest
+- Soft delete for data recovery
+- Panic recovery with stack traces
+- Request correlation IDs for tracing
 
-## 🚢 Deployment
+## Monitoring & Observability
+
+**Structured Logging**
+- Zap logger with configurable levels
+- Request correlation IDs
+- Contextual logging throughout application
+
+**Health Checks**
+- `/health` - Full dependency health check (Postgres, MongoDB, Redis)
+- `/health/ready` - Readiness probe for Kubernetes
+- `/health/live` - Liveness probe for Kubernetes
+
+**Metrics** (Prometheus at `/metrics`)
+- HTTP request metrics (total, duration, by endpoint, status code)
+- Database operation metrics (queries, duration)
+- WebSocket connection metrics
+- Cache hit/miss ratios
+- JWT token operations
+- Rate limit metrics
+
+**Distributed Tracing**
+- OpenTelemetry integration
+- Jaeger exporter support
+- Request ID propagation
+- Service-to-service tracing
+
+**Error Tracking**
+- Panic recovery middleware with stack traces
+- Structured error logging
+- Audit logs for security events
+
+## Deployment
 
 ### Docker Deployment
 
@@ -296,36 +665,67 @@ docker-compose up -d
 Production-ready Kubernetes manifests are available in the `k8s/` directory:
 
 ```bash
-kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/
 ```
 
-**Features:**
+**Kubernetes Features:**
 - HorizontalPodAutoscaler for auto-scaling (3-10 replicas)
 - Resource limits and requests configured
 - Liveness and readiness probes
 - Secret management for sensitive configuration
 - Service and ingress configuration
+- Rolling updates with zero downtime
 
 ### Production Considerations
 
-1. **Environment Variables**: Set secure values for:
-
-   - `JWT_SECRET`
-   - `ENCRYPTION_KEY`
+**Security**
+1. Set secure values for environment variables:
+   - `JWT_SECRET` (minimum 32 characters)
+   - `ENCRYPTION_KEY` (exactly 32 bytes for AES-256)
    - Database passwords
+   - OAuth2 credentials
+   - Push notification keys
 
-2. **HTTPS**: Use a reverse proxy (nginx, Caddy) for TLS termination
+2. Enable HTTPS with reverse proxy (nginx, Caddy) or ingress controller
 
-3. **Database Backups**: Set up automated backups for PostgreSQL and MongoDB
+3. Configure proper CORS policies for your domain
 
-4. **Monitoring**: Integrate with monitoring solutions (Datadog, New Relic, etc.)
+4. Enable audit logging for compliance
 
-5. **Scaling**:
-   - Run multiple app instances behind a load balancer
-   - Use Redis for cross-instance WebSocket message routing
-   - Consider read replicas for databases
+**Database Management**
+1. Set up automated backups for PostgreSQL and MongoDB
 
-## 🐛 Troubleshooting
+2. Configure read replicas for scaling
+
+3. Implement proper backup retention policies
+
+4. Monitor database performance and slow queries
+
+**Monitoring & Alerting**
+1. Integrate with monitoring solutions:
+   - Prometheus for metrics scraping
+   - Grafana for dashboards
+   - Jaeger for distributed tracing
+   - ELK stack for log aggregation
+
+2. Set up alerts for:
+   - High error rates
+   - Database connection failures
+   - High response times
+   - Resource exhaustion
+
+**Scaling**
+1. Run multiple app instances behind a load balancer
+
+2. Use Redis for cross-instance WebSocket message routing
+
+3. Enable connection pooling for databases
+
+4. Implement caching strategies with Redis
+
+5. Use CDN for static assets
+
+## Troubleshooting
 
 ### Connection Issues
 
@@ -347,13 +747,35 @@ docker-compose restart
 
 ```bash
 # Check migration status
-migrate -path migrations/postgres -database "<connection-string>" version
+migrate -path migrations/postgres -database "${POSTGRES_URL}" version
 
-# Force migration version
-migrate -path migrations/postgres -database "<connection-string>" force <version>
+# Force migration version (use with caution)
+migrate -path migrations/postgres -database "${POSTGRES_URL}" force <version>
+
+# Rollback one migration
+task migrate-down
+
+# Run all migrations
+task migrate-up
+
+# Create new migration
+task migrate-create -- add_new_feature
 ```
 
-## 🤝 Contributing
+### WebSocket Connection Issues
+
+```bash
+# Check Redis connectivity
+redis-cli -h localhost -p 6379 ping
+
+# Monitor WebSocket connections
+docker-compose logs -f app | grep -i websocket
+
+# Check authentication
+curl -H "Authorization: Bearer <token>" http://localhost:8080/health
+```
+
+## Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -361,18 +783,26 @@ migrate -path migrations/postgres -database "<connection-string>" force <version
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📝 License
+**Development Guidelines:**
+- Write tests for new features
+- Follow Go best practices and idioms
+- Update documentation for API changes
+- Run `task verify` before submitting PR (runs fmt, lint, test, build)
+- Ensure all CI checks pass
+- Use `task lint-fix` to auto-fix common linting issues
+- Run `task security` to check for vulnerabilities
 
-This project is licensed under the MIT License.
+## License
 
-## 👥 Support
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support
 
 For questions and support:
-
 - Open an issue on [GitHub](https://github.com/sandeepkv93/anonymous-support-backend/issues)
 - Check the [Discussions](https://github.com/sandeepkv93/anonymous-support-backend/discussions)
 
-## 🔗 Links
+## Links
 
 - **Repository**: [github.com/sandeepkv93/anonymous-support-backend](https://github.com/sandeepkv93/anonymous-support-backend)
 - **Issues**: [Report bugs or request features](https://github.com/sandeepkv93/anonymous-support-backend/issues)
@@ -380,4 +810,4 @@ For questions and support:
 
 ---
 
-Built with ❤️ for recovery and peer support | [View on GitHub](https://github.com/sandeepkv93/anonymous-support-backend)
+Built for recovery and peer support | [View on GitHub](https://github.com/sandeepkv93/anonymous-support-backend)
