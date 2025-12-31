@@ -6,6 +6,100 @@
 
 A production-ready backend system for an anonymous peer support mobile application where users can post real-time struggles with addictions/cravings and receive immediate community support.
 
+## About
+
+This backend powers a peer support platform designed to help individuals struggling with addictions, cravings, and recovery challenges by connecting them with a supportive community in real-time.
+
+### The Problem
+
+Traditional support systems often have significant barriers:
+- Scheduled meetings that don't align with moments of crisis
+- Geographic limitations requiring physical attendance
+- Fear of judgment or stigma preventing people from seeking help
+- Lack of immediate support when cravings or triggers hit
+- Limited community access outside of formal programs
+
+### The Solution
+
+Anonymous Support provides:
+- **Instant Access**: Post SOS alerts when facing a craving or difficult moment and receive immediate community support
+- **Anonymous by Default**: Users can participate without revealing their identity, reducing stigma and encouraging honest sharing
+- **24/7 Community**: Global peer support available anytime, anywhere
+- **Structured Support Types**: Different post categories (SOS, check-ins, victories, questions) for various support needs
+- **Topic-Specific Circles**: Join communities focused on specific addictions, challenges, or recovery approaches
+- **Gamification for Good**: Strength points reward helpful participation, encouraging active community engagement
+
+### How It Works
+
+**For Someone Seeking Support:**
+1. Register anonymously (username + avatar) or with email for account recovery
+2. Post an SOS alert when facing a craving: "Really struggling right now, been 30 days clean but the urge is intense"
+3. Receive immediate responses from community members who understand the struggle
+4. Get one-tap quick support (e.g., "You got this!", "Stay strong!") and detailed text/voice responses
+5. Track recovery progress with streak counters and analytics
+6. Celebrate victories by posting milestones to inspire others
+
+**For Community Members:**
+1. Browse real-time feed of posts from people needing support
+2. Respond with encouragement, advice, or shared experiences
+3. Earn strength points for helping others, building reputation in the community
+4. Join topic-specific circles (alcohol recovery, smoking cessation, gambling addiction, etc.)
+5. Filter feed by urgency level to focus on critical needs first
+
+**For Moderators:**
+1. Review flagged content through moderation queue
+2. Take action on harmful content or harassment
+3. Access audit logs for security and compliance
+4. Manage circles and community guidelines
+
+### Key Features
+
+**Post Types:**
+- **SOS Alerts**: Urgent help needed during moments of crisis or intense cravings
+- **Check-ins**: Daily or regular status updates on recovery journey
+- **Victories**: Celebrating milestones (1 day clean, 30 days, 1 year, etc.)
+- **Questions**: Seeking advice or information from the community
+
+**Support Mechanisms:**
+- **Quick Support Buttons**: One-tap encouragement for instant validation
+- **Text Responses**: Detailed advice, shared experiences, and empathy
+- **Voice Notes**: Personal voice messages for deeper connection (planned)
+- **Real-time Notifications**: Instant alerts when your post receives support
+
+**Community Organization:**
+- **Support Circles**: Topic-specific communities (e.g., "Alcohol Recovery", "Nicotine Freedom", "Clean & Sober")
+- **Public/Private Circles**: Choose visibility level based on sensitivity
+- **Member Roles**: Regular members, moderators, and administrators
+
+**Safety & Moderation:**
+- **Content Filtering**: Automatic detection of harmful content, profanity, and triggers
+- **User Blocking**: Block users who are not supportive or violate guidelines
+- **Reporting System**: Flag inappropriate content for moderator review
+- **Audit Trail**: Complete history of moderation actions for accountability
+
+**Privacy & Security:**
+- **Anonymous First**: No requirement to reveal real identity
+- **Encrypted Data**: AES-256 encryption for sensitive information
+- **Secure Authentication**: JWT tokens with rotation and OAuth2 support
+- **Soft Delete**: Recovery option for accidentally deleted content
+
+### Use Cases
+
+1. **Crisis Intervention**: User feeling overwhelming craving posts SOS, receives immediate community support to help resist
+2. **Daily Accountability**: Users post check-ins to maintain streak and stay accountable to community
+3. **Milestone Celebration**: Someone reaches 90 days sober, posts victory to inspire and be celebrated by community
+4. **Knowledge Sharing**: New member asks about coping strategies, experienced members share what worked for them
+5. **Trigger Management**: User identifies a trigger situation, community helps develop coping plan
+6. **Relapse Support**: After a setback, user finds non-judgmental encouragement to restart journey
+
+### Target Audience
+
+- Individuals in recovery from addiction (alcohol, drugs, nicotine, gambling, etc.)
+- People experiencing cravings and seeking immediate peer support
+- Support groups looking for digital-first community platforms
+- Recovery programs wanting to supplement in-person meetings with 24/7 online support
+- Healthcare providers seeking tools to connect patients with peer communities
+
 ## Production-Ready Features
 
 - Connect-RPC API with full service implementation
