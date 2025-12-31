@@ -11,6 +11,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 
+	authv1connect "github.com/yourorg/anonymous-support/gen/auth/v1/authv1connect"
+	circlev1connect "github.com/yourorg/anonymous-support/gen/circle/v1/circlev1connect"
+	moderationv1connect "github.com/yourorg/anonymous-support/gen/moderation/v1/moderationv1connect"
+	postv1connect "github.com/yourorg/anonymous-support/gen/post/v1/postv1connect"
+	supportv1connect "github.com/yourorg/anonymous-support/gen/support/v1/supportv1connect"
+	userv1connect "github.com/yourorg/anonymous-support/gen/user/v1/userv1connect"
 	"github.com/yourorg/anonymous-support/internal/config"
 	"github.com/yourorg/anonymous-support/internal/handler/rpc"
 	"github.com/yourorg/anonymous-support/internal/handler/websocket"
@@ -127,46 +133,30 @@ func (a *Application) wireServices() error {
 	)
 
 	// User service
-	a.UserService = service.NewUserService(
-		a.UserRepo.(*postgres.UserRepository),
-		a.AnalyticsRepo.(*mongodb.AnalyticsRepository),
-	)
+	userRepo := a.UserRepo.(*postgres.UserRepository)
+	analyticsRepo := a.AnalyticsRepo.(*mongodb.AnalyticsRepository)
+	a.UserService = service.NewUserService(userRepo, analyticsRepo)
 
 	// Post service
+	postRepo := a.PostRepo.(*mongodb.PostRepository)
+	realtimeRepo := a.RealtimeRepo.(*redisrepo.RealtimeRepository)
 	contentFilter := moderator.NewContentFilter(a.Config.Moderation.ProfanityFilterLevel)
-	a.PostService = service.NewPostService(
-		a.PostRepo.(*mongodb.PostRepository),
-		a.RealtimeRepo.(*redisrepo.RealtimeRepository),
-		contentFilter,
-	)
+	a.PostService = service.NewPostService(postRepo, realtimeRepo, contentFilter)
 
 	// Support service
-	a.SupportService = service.NewSupportService(
-		a.SupportRepo.(*mongodb.SupportRepository),
-		a.PostRepo.(*mongodb.PostRepository),
-		a.UserRepo.(*postgres.UserRepository),
-		a.RealtimeRepo.(*redisrepo.RealtimeRepository),
-	)
+	supportRepo := a.SupportRepo.(*mongodb.SupportRepository)
+	a.SupportService = service.NewSupportService(supportRepo, postRepo, userRepo, realtimeRepo)
 
 	// Circle service
-	a.CircleService = service.NewCircleService(
-		a.CircleRepo.(*postgres.CircleRepository),
-		a.PostRepo.(*mongodb.PostRepository),
-	)
+	circleRepo := a.CircleRepo.(*postgres.CircleRepository)
+	a.CircleService = service.NewCircleService(circleRepo, postRepo)
 
 	// Moderation service
-	a.ModerationService = service.NewModerationService(
-		a.ModerationRepo,
-		a.PostRepo,
-		a.UserRepo,
-		a.Logger,
-	)
+	modRepo := a.ModerationRepo.(*postgres.ModerationRepository)
+	a.ModerationService = service.NewModerationService(modRepo)
 
 	// Analytics service
-	a.AnalyticsService = service.NewAnalyticsService(
-		a.AnalyticsRepo,
-		a.Logger,
-	)
+	a.AnalyticsService = service.NewAnalyticsService(analyticsRepo)
 
 	return nil
 }
@@ -235,29 +225,36 @@ func (a *Application) SetupHTTPServer() error {
 	mux := http.NewServeMux()
 
 	// Setup RPC handlers
-	authHandler := rpc.NewAuthHandler(a.AuthService, a.Logger)
-	userHandler := rpc.NewUserHandler(a.UserService, a.Logger)
-	postHandler := rpc.NewPostHandler(a.PostService, a.Logger)
-	supportHandler := rpc.NewSupportHandler(a.SupportService, a.Logger)
-	circleHandler := rpc.NewCircleHandler(a.CircleService, a.Logger)
-	moderationHandler := rpc.NewModerationHandler(a.ModerationService, a.Logger)
+	authHandler := rpc.NewAuthHandler(a.AuthService)
+	userHandler := rpc.NewUserHandler(a.UserService)
+	postHandler := rpc.NewPostHandler(a.PostService)
+	supportHandler := rpc.NewSupportHandler(a.SupportService)
+	circleHandler := rpc.NewCircleHandler(a.CircleService)
+	moderationHandler := rpc.NewModerationHandler(a.ModerationService)
 
-	// Register RPC routes
-	authHandler.RegisterRoutes(mux)
-	userHandler.RegisterRoutes(mux)
-	postHandler.RegisterRoutes(mux)
-	supportHandler.RegisterRoutes(mux)
-	circleHandler.RegisterRoutes(mux)
-	moderationHandler.RegisterRoutes(mux)
+	// Register Connect RPC routes
+	authPath, authHTTPHandler := authv1connect.NewAuthServiceHandler(authHandler)
+	userPath, userHTTPHandler := userv1connect.NewUserServiceHandler(userHandler)
+	postPath, postHTTPHandler := postv1connect.NewPostServiceHandler(postHandler)
+	supportPath, supportHTTPHandler := supportv1connect.NewSupportServiceHandler(supportHandler)
+	circlePath, circleHTTPHandler := circlev1connect.NewCircleServiceHandler(circleHandler)
+	moderationPath, moderationHTTPHandler := moderationv1connect.NewModerationServiceHandler(moderationHandler)
+
+	mux.Handle(authPath, authHTTPHandler)
+	mux.Handle(userPath, userHTTPHandler)
+	mux.Handle(postPath, postHTTPHandler)
+	mux.Handle(supportPath, supportHTTPHandler)
+	mux.Handle(circlePath, circleHTTPHandler)
+	mux.Handle(moderationPath, moderationHTTPHandler)
 
 	// Setup middleware chain
 	handler := middleware.Chain(
 		mux,
-		middleware.NewRecoveryMiddleware(a.Logger),
-		middleware.NewRequestIDMiddleware(),
-		middleware.NewMetricsMiddleware(),
-		middleware.NewCORSMiddleware(a.Config),
-		middleware.NewLoggingMiddleware(a.Logger),
+		middleware.RecoveryMiddleware(a.Logger),
+		middleware.RequestIDMiddleware(),
+		middleware.MetricsMiddleware(),
+		middleware.CORSMiddleware(),
+		middleware.LoggingMiddleware(a.Logger),
 	)
 
 	// Create HTTP server

@@ -45,5 +45,16 @@ func (s *UserService) GetStreak(ctx context.Context, userID string) (*domain.Use
 }
 
 func (s *UserService) UpdateStreak(ctx context.Context, userID string, hadRelapse bool) (int, error) {
-	return s.analyticsRepo.UpdateStreak(ctx, userID, hadRelapse)
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return 0, err
+	}
+	if err := s.analyticsRepo.UpdateStreak(ctx, uid, hadRelapse); err != nil {
+		return 0, err
+	}
+	tracker, err := s.analyticsRepo.GetTracker(ctx, userID)
+	if err != nil {
+		return 0, err
+	}
+	return tracker.StreakDays, nil
 }

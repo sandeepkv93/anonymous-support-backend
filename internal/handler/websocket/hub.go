@@ -100,3 +100,8 @@ func (h *Hub) IsUserOnline(userID string) bool {
 	_, ok := h.clients[userID]
 	return ok
 }
+
+func (h *Hub) Stop() {
+	close(h.Register)
+	close(h.Unregister)
+}

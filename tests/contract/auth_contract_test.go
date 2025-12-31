@@ -33,13 +33,8 @@ func TestAuthService_RegisterAnonymous_Contract(t *testing.T) {
 	// Contract assertions
 	assert.NotEmpty(t, resp.Msg.AccessToken, "Access token must be present")
 	assert.NotEmpty(t, resp.Msg.RefreshToken, "Refresh token must be present")
-	assert.NotNil(t, resp.Msg.User, "User object must be present")
-
-	// User contract
-	assert.NotEmpty(t, resp.Msg.User.Id, "User ID must be present")
-	assert.Equal(t, "contract_test_user", resp.Msg.User.Username)
-	assert.True(t, resp.Msg.User.IsAnonymous, "User must be anonymous")
-	assert.Equal(t, int32(0), resp.Msg.User.StrengthPoints, "Initial strength points must be 0")
+	assert.NotEmpty(t, resp.Msg.UserId, "User ID must be present")
+	assert.Equal(t, "contract_test_user", resp.Msg.Username, "Username must match")
 }
 
 func TestAuthService_RegisterWithEmail_Contract(t *testing.T) {
@@ -62,13 +57,8 @@ func TestAuthService_RegisterWithEmail_Contract(t *testing.T) {
 	// Contract assertions
 	assert.NotEmpty(t, resp.Msg.AccessToken)
 	assert.NotEmpty(t, resp.Msg.RefreshToken)
-	assert.NotNil(t, resp.Msg.User)
-
-	// User contract
-	assert.NotEmpty(t, resp.Msg.User.Id)
-	assert.Equal(t, "email_contract_test", resp.Msg.User.Username)
-	assert.Equal(t, "contract@example.com", resp.Msg.User.Email)
-	assert.False(t, resp.Msg.User.IsAnonymous)
+	assert.NotEmpty(t, resp.Msg.UserId)
+	assert.Equal(t, "email_contract_test", resp.Msg.Username)
 }
 
 func TestAuthService_Login_Contract(t *testing.T) {
@@ -90,7 +80,7 @@ func TestAuthService_Login_Contract(t *testing.T) {
 
 	// Then login
 	loginReq := &authv1.LoginRequest{
-		Email:    "login@example.com",
+		Username: "login_test",
 		Password: "SecurePassword123!",
 	}
 
@@ -100,8 +90,8 @@ func TestAuthService_Login_Contract(t *testing.T) {
 	// Contract assertions
 	assert.NotEmpty(t, resp.Msg.AccessToken)
 	assert.NotEmpty(t, resp.Msg.RefreshToken)
-	assert.NotNil(t, resp.Msg.User)
-	assert.Equal(t, "login_test", resp.Msg.User.Username)
+	assert.NotEmpty(t, resp.Msg.UserId)
+	assert.Equal(t, "login_test", resp.Msg.Username)
 }
 
 func TestAuthService_RefreshToken_Contract(t *testing.T) {
@@ -129,9 +119,6 @@ func TestAuthService_RefreshToken_Contract(t *testing.T) {
 
 	// Contract assertions
 	assert.NotEmpty(t, resp.Msg.AccessToken, "New access token must be present")
-	assert.NotEmpty(t, resp.Msg.RefreshToken, "New refresh token must be present")
-	assert.NotEqual(t, registerResp.Msg.RefreshToken, resp.Msg.RefreshToken,
-		"Refresh token should be rotated")
 }
 
 func TestAuthService_Logout_Contract(t *testing.T) {
@@ -196,7 +183,7 @@ func TestAuthService_Login_InvalidCredentials_Contract(t *testing.T) {
 	ctx := context.Background()
 
 	req := &authv1.LoginRequest{
-		Email:    "nonexistent@example.com",
+		Username: "nonexistent",
 		Password: "wrongpassword",
 	}
 

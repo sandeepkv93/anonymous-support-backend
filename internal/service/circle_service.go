@@ -73,7 +73,6 @@ func (s *CircleService) JoinCircle(ctx context.Context, userID, circleID string)
 		return fmt.Errorf("circle is full")
 	}
 
-
 	return s.circleRepo.JoinCircle(ctx, cid, uid)
 }
 
@@ -98,9 +97,13 @@ func (s *CircleService) GetCircleMembers(ctx context.Context, circleID string, l
 	}
 
 	memberIDs, err := s.circleRepo.GetMembers(ctx, cid, limit, offset)
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	memberships := make([]*domain.CircleMembership, len(memberIDs))
-	for i, uid := range memberIDs { memberships[i] = &domain.CircleMembership{UserID: uid, CircleID: cid} }
+	for i, uid := range memberIDs {
+		memberships[i] = &domain.CircleMembership{UserID: uid, CircleID: cid}
+	}
 	return memberships, nil
 }
 

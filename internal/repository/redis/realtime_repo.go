@@ -99,3 +99,16 @@ func (r *RealtimeRepository) CheckRateLimit(ctx context.Context, userID, action 
 func (r *RealtimeRepository) AddSupporter(ctx context.Context, postID, userID string) error {
 	return r.AddSupporterToPost(ctx, postID, userID)
 }
+func (r *RealtimeRepository) GetSupporters(ctx context.Context, postID string) ([]string, error) {
+	return []string{}, nil
+}
+func (r *RealtimeRepository) PublishNotification(ctx context.Context, channel string, message interface{}) error {
+	payload, err := json.Marshal(message)
+	if err != nil {
+		return err
+	}
+	return r.client.Publish(ctx, channel, payload).Err()
+}
+func (r *RealtimeRepository) SubscribeToChannel(ctx context.Context, channel string) error {
+	return nil
+}

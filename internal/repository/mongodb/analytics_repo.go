@@ -32,6 +32,10 @@ func (r *AnalyticsRepository) GetTracker(ctx context.Context, userID string) (*d
 	return &tracker, err
 }
 
+func (r *AnalyticsRepository) GetUserTracker(ctx context.Context, userID uuid.UUID) (*domain.UserTracker, error) {
+	return r.GetTracker(ctx, userID.String())
+}
+
 func (r *AnalyticsRepository) UpsertTracker(ctx context.Context, tracker *domain.UserTracker) error {
 	if tracker.ID.IsZero() {
 		tracker.ID = primitive.NewObjectID()
@@ -46,15 +50,15 @@ func (r *AnalyticsRepository) UpsertTracker(ctx context.Context, tracker *domain
 	return err
 }
 
-func (r *AnalyticsRepository) UpdateStreak(ctx context.Context, userID string, hadRelapse bool) (int, error) {
-	tracker, err := r.GetTracker(ctx, userID)
+func (r *AnalyticsRepository) UpdateStreak(ctx context.Context, userID uuid.UUID, hadRelapse bool) error {
+	tracker, err := r.GetTracker(ctx, userID.String())
 	if err != nil && err.Error() != "tracker not found" {
-		return 0, err
+		return err
 	}
 
 	if tracker == nil {
 		tracker = &domain.UserTracker{
-			UserID:               userID,
+			UserID:               userID.String(),
 			StreakDays:           0,
 			TotalCravings:        0,
 			CravingsResisted:     0,
@@ -73,15 +77,11 @@ func (r *AnalyticsRepository) UpdateStreak(ctx context.Context, userID string, h
 		tracker.StreakDays++
 	}
 
-	if err := r.UpsertTracker(ctx, tracker); err != nil {
-		return 0, err
-	}
-
-	return tracker.StreakDays, nil
+	return r.UpsertTracker(ctx, tracker)
 }
 
-func (r *AnalyticsRepository) IncrementCravings(ctx context.Context, userID string, resisted bool) error {
-	filter := bson.M{"user_id": userID}
+func (r *AnalyticsRepository) IncrementCravings(ctx context.Context, userID uuid.UUID, resisted bool) error {
+	filter := bson.M{"user_id": userID.String()}
 	update := bson.M{
 		"$inc": bson.M{"total_cravings": 1},
 	}
@@ -97,4 +97,17 @@ func (r *AnalyticsRepository) IncrementCravings(ctx context.Context, userID stri
 
 func (r *AnalyticsRepository) AddMilestone(ctx context.Context, userID uuid.UUID, name string) error {
 	return nil
+}
+func (r *AnalyticsRepository) CreateUserTracker(ctx context.Context, userID uuid.UUID) error {
+	tracker := &domain.UserTracker{
+		UserID:               userID.String(),
+		StreakDays:           0,
+		TotalCravings:        0,
+		CravingsResisted:     0,
+		VulnerabilityPattern: make(map[string]int),
+		Categories:           []string{},
+		Goals:                []domain.Goal{},
+		Milestones:           []domain.Milestone{},
+	}
+	return r.UpsertTracker(ctx, tracker)
 }
