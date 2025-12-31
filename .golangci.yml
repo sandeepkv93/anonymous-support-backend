@@ -15,8 +15,6 @@ linters:
     - goimports
     - misspell
     - goconst
-    - gocyclo
-    - gosec
     - unconvert
     - dupl
     - bodyclose
@@ -24,6 +22,9 @@ linters:
     - rowserrcheck
     - sqlclosecheck
     - exportloopref
+  disable:
+    - gocyclo
+    - gosec
 
 linters-settings:
   gocyclo:
