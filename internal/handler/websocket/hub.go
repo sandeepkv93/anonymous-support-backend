@@ -52,7 +52,7 @@ func (h *Hub) Run() {
 		case message := <-h.broadcast:
 			h.mu.RLock()
 			for _, client := range h.clients {
-				client.SendMessage(message)
+				_ = client.SendMessage(message)
 			}
 			h.mu.RUnlock()
 		}
@@ -64,7 +64,7 @@ func (h *Hub) SendToUser(userID string, msg WSMessage) {
 	defer h.mu.RUnlock()
 
 	if client, ok := h.clients[userID]; ok {
-		client.SendMessage(msg)
+		_ = client.SendMessage(msg)
 	}
 }
 

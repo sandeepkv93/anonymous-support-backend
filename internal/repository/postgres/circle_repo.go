@@ -62,7 +62,7 @@ func (r *CircleRepository) JoinCircle(ctx context.Context, circleID, userID uuid
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	query := `
 		INSERT INTO circle_memberships (id, circle_id, user_id, role)
@@ -88,7 +88,7 @@ func (r *CircleRepository) LeaveCircle(ctx context.Context, circleID, userID uui
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	deleteQuery := `DELETE FROM circle_memberships WHERE circle_id = $1 AND user_id = $2`
 	if _, err := tx.ExecContext(ctx, deleteQuery, circleID, userID); err != nil {

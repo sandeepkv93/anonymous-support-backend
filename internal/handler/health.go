@@ -85,7 +85,7 @@ func (h *HealthHandler) Check(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(httpStatus)
-	json.NewEncoder(w).Encode(response)
+	_ = json.NewEncoder(w).Encode(response)
 }
 
 func (h *HealthHandler) checkPostgres(ctx context.Context) DependencyHealth {
@@ -151,11 +151,11 @@ func (h *HealthHandler) checkRedis(ctx context.Context) DependencyHealth {
 // Ready returns a simple readiness check (lighter than full health check)
 func (h *HealthHandler) Ready(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("OK"))
+	_, _ = w.Write([]byte("OK"))
 }
 
 // Live returns a simple liveness check
 func (h *HealthHandler) Live(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("OK"))
+	_, _ = w.Write([]byte("OK"))
 }

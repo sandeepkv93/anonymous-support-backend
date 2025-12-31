@@ -59,7 +59,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to create logger:", err)
 	}
-	defer logger.Sync()
+	defer func() { _ = logger.Sync() }()
 
 	postgresDB, err := sqlx.Connect("postgres", cfg.Postgres.DSN())
 	if err != nil {
@@ -85,7 +85,7 @@ func main() {
 	if err != nil {
 		logger.Fatal("Failed to connect to MongoDB", zap.Error(err))
 	}
-	defer mongoClient.Disconnect(context.Background())
+	defer func() { _ = mongoClient.Disconnect(context.Background()) }()
 	mongoDB := mongoClient.Database(cfg.MongoDB.Database)
 
 	redisClient := redis.NewClient(&redis.Options{

@@ -55,12 +55,12 @@ func (s *SupportService) CreateResponse(ctx context.Context, userID, username, p
 		return "", 0, err
 	}
 
-	s.postRepo.IncrementResponseCount(ctx, postID)
+	_ = s.postRepo.IncrementResponseCount(ctx, postID)
 
 	uid, _ := uuid.Parse(userID)
-	s.userRepo.UpdateStrengthPoints(ctx, uid, strengthPoints)
+	_ = s.userRepo.UpdateStrengthPoints(ctx, uid, strengthPoints)
 
-	s.realtimeRepo.PublishNewResponse(ctx, postID, response.ID.Hex())
+	_ = s.realtimeRepo.PublishNewResponse(ctx, postID, response.ID.Hex())
 
 	return response.ID.Hex(), strengthPoints, nil
 }
@@ -70,8 +70,8 @@ func (s *SupportService) GetResponses(ctx context.Context, postID string, limit,
 }
 
 func (s *SupportService) QuickSupport(ctx context.Context, userID, postID, messageType string) (int, error) {
-	s.realtimeRepo.AddSupporterToPost(ctx, postID, userID)
-	s.postRepo.IncrementSupportCount(ctx, postID)
+	_ = s.realtimeRepo.AddSupporterToPost(ctx, postID, userID)
+	_ = s.postRepo.IncrementSupportCount(ctx, postID)
 
 	count, err := s.realtimeRepo.GetSupporterCount(ctx, postID)
 	if err != nil {

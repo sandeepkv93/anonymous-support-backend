@@ -62,16 +62,16 @@ func (s *PostService) CreatePost(ctx context.Context, userID, username string, p
 	}
 
 	if !post.IsModerated {
-		s.realtimeRepo.PublishNewPost(ctx, post.ID.Hex(), string(postType), categories)
+		_ = s.realtimeRepo.PublishNewPost(ctx, post.ID.Hex(), string(postType), categories)
 		feedScore := float64(time.Now().Unix())
-		s.realtimeRepo.AddToFeed(ctx, "feed:global:latest", post.ID.Hex(), feedScore)
+		_ = s.realtimeRepo.AddToFeed(ctx, "feed:global:latest", post.ID.Hex(), feedScore)
 	}
 
 	return post, nil
 }
 
 func (s *PostService) GetPost(ctx context.Context, postID string) (*domain.Post, error) {
-	s.realtimeRepo.IncrementViewCount(ctx, postID)
+	_ = s.realtimeRepo.IncrementViewCount(ctx, postID)
 	return s.postRepo.GetByID(ctx, postID)
 }
 
