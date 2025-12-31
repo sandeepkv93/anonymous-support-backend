@@ -1,0 +1,179 @@
+version: '3'
+
+vars:
+  BINARY_NAME: server
+  BUILD_DIR: bin
+  MAIN_PATH: ./cmd/server
+
+tasks:
+  default:
+    desc: Show available tasks
+    cmds:
+      - task --list
+
+  install:
+    desc: Install development dependencies
+    cmds:
+      - go mod download
+      - go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+      - go install golang.org/x/vuln/cmd/govulncheck@latest
+      - go install github.com/bufbuild/buf/cmd/buf@latest
+
+  build:
+    desc: Build the application
+    cmds:
+      - mkdir -p {{.BUILD_DIR}}
+      - go build -o {{.BUILD_DIR}}/{{.BINARY_NAME}} {{.MAIN_PATH}}
+
+  run:
+    desc: Run the application
+    deps: [build]
+    cmds:
+      - ./{{.BUILD_DIR}}/{{.BINARY_NAME}}
+
+  dev:
+    desc: Run the application with air for hot reload
+    cmds:
+      - go run github.com/cosmtrek/air@latest
+
+  test:
+    desc: Run all tests
+    cmds:
+      - go test -v -race -coverprofile=coverage.out ./...
+
+  test-unit:
+    desc: Run unit tests only
+    cmds:
+      - go test -v -short ./...
+
+  test-integration:
+    desc: Run integration tests
+    cmds:
+      - go test -v -run Integration ./...
+
+  test-coverage:
+    desc: Run tests with coverage report
+    cmds:
+      - go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+      - go tool cover -html=coverage.out -o coverage.html
+      - echo "Coverage report generated at coverage.html"
+
+  lint:
+    desc: Run linters
+    cmds:
+      - gofmt -s -l .
+      - go vet ./...
+      - golangci-lint run --timeout=5m
+
+  lint-fix:
+    desc: Auto-fix linting issues
+    cmds:
+      - gofmt -s -w .
+      - golangci-lint run --fix
+
+  fmt:
+    desc: Format code
+    cmds:
+      - gofmt -s -w .
+      - go mod tidy
+
+  security:
+    desc: Run security scans
+    cmds:
+      - govulncheck ./...
+
+  proto:
+    desc: Generate protobuf code
+    cmds:
+      - buf generate
+
+  migrate-up:
+    desc: Run database migrations
+    cmds:
+      - echo "Run PostgreSQL migrations"
+      - migrate -path migrations/postgres -database "${POSTGRES_URL}" up
+
+  migrate-down:
+    desc: Rollback last database migration
+    cmds:
+      - migrate -path migrations/postgres -database "${POSTGRES_URL}" down 1
+
+  migrate-create:
+    desc: Create a new migration
+    cmds:
+      - migrate create -ext sql -dir migrations/postgres -seq {{.CLI_ARGS}}
+
+  docker-build:
+    desc: Build Docker image
+    cmds:
+      - docker build -t anonymous-support-api:latest .
+
+  docker-run:
+    desc: Run Docker container
+    deps: [docker-build]
+    cmds:
+      - docker run -p 8080:8080 --env-file .env anonymous-support-api:latest
+
+  docker-compose-up:
+    desc: Start all services with docker-compose
+    cmds:
+      - docker-compose up -d
+
+  docker-compose-down:
+    desc: Stop all services with docker-compose
+    cmds:
+      - docker-compose down
+
+  docker-compose-logs:
+    desc: View logs from docker-compose services
+    cmds:
+      - docker-compose logs -f
+
+  clean:
+    desc: Clean build artifacts and caches
+    cmds:
+      - rm -rf {{.BUILD_DIR}}
+      - rm -f coverage.out coverage.html
+      - go clean -cache -testcache -modcache
+
+  deps:
+    desc: Update dependencies
+    cmds:
+      - go get -u ./...
+      - go mod tidy
+
+  verify:
+    desc: Verify all checks pass (lint, test, build)
+    cmds:
+      - task: fmt
+      - task: lint
+      - task: test
+      - task: build
+
+  seed:
+    desc: Seed database with test data
+    cmds:
+      - go run scripts/seed.go
+
+  gen-mocks:
+    desc: Generate mock implementations for testing
+    cmds:
+      - go install github.com/golang/mock/mockgen@latest
+      - go generate ./...
+
+  k8s-apply:
+    desc: Apply Kubernetes manifests
+    cmds:
+      - kubectl apply -f k8s/
+
+  k8s-delete:
+    desc: Delete Kubernetes resources
+    cmds:
+      - kubectl delete -f k8s/
+
+  help:
+    desc: Show help information
+    cmds:
+      - echo "Anonymous Support API - Development Tasks"
+      - echo ""
+      - task --list

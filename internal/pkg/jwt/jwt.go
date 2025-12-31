@@ -8,7 +8,7 @@ import (
 	"github.com/yourorg/anonymous-support/internal/domain"
 )
 
-type Manager struct {
+type JWTManager struct {
 	secret        []byte
 	accessExpiry  time.Duration
 	refreshExpiry time.Duration
@@ -16,14 +16,22 @@ type Manager struct {
 	audience      string
 }
 
-func NewManager(secret string, accessExpiry, refreshExpiry time.Duration) *Manager {
-	return &Manager{
+// Manager is an alias for JWTManager for backward compatibility
+type Manager = JWTManager
+
+func NewJWTManager(secret string, accessExpiry, refreshExpiry time.Duration) *JWTManager {
+	return &JWTManager{
 		secret:        []byte(secret),
 		accessExpiry:  accessExpiry,
 		refreshExpiry: refreshExpiry,
 		issuer:        "anonymous-support-api",
 		audience:      "anonymous-support-client",
 	}
+}
+
+// NewManager is an alias for NewJWTManager for backward compatibility
+func NewManager(secret string, accessExpiry, refreshExpiry time.Duration) *JWTManager {
+	return NewJWTManager(secret, accessExpiry, refreshExpiry)
 }
 
 type Claims struct {
@@ -34,7 +42,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func (m *Manager) GenerateAccessToken(user *domain.User) (string, error) {
+func (m *JWTManager) GenerateAccessToken(user *domain.User) (string, error) {
 	now := time.Now()
 	claims := Claims{
 		UserID:      user.ID.String(),
@@ -55,7 +63,7 @@ func (m *Manager) GenerateAccessToken(user *domain.User) (string, error) {
 	return token.SignedString(m.secret)
 }
 
-func (m *Manager) GenerateRefreshToken(userID string) (string, error) {
+func (m *JWTManager) GenerateRefreshToken(userID string) (string, error) {
 	now := time.Now()
 	claims := jwt.RegisteredClaims{
 		Issuer:    m.issuer,
@@ -70,7 +78,7 @@ func (m *Manager) GenerateRefreshToken(userID string) (string, error) {
 	return token.SignedString(m.secret)
 }
 
-func (m *Manager) ValidateAccessToken(tokenString string) (*Claims, error) {
+func (m *JWTManager) ValidateAccessToken(tokenString string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -93,7 +101,7 @@ func (m *Manager) ValidateAccessToken(tokenString string) (*Claims, error) {
 	return nil, fmt.Errorf("invalid token")
 }
 
-func (m *Manager) ValidateRefreshToken(tokenString string) (string, error) {
+func (m *JWTManager) ValidateRefreshToken(tokenString string) (string, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
