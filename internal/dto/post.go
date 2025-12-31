@@ -126,7 +126,7 @@ func NewPostDTO(post *domain.Post) *PostDTO {
 		DaysSinceRelapse: int32(post.Context.DaysSinceRelapse),
 		TimeContext:      post.Context.TimeContext,
 		Tags:             post.Context.Tags,
-		Visibility:       string(post.Visibility),
+		Visibility:       post.Visibility,
 		CircleID:         circleID,
 		ResponseCount:    int32(post.ResponseCount),
 		SupportCount:     int32(post.SupportCount),
