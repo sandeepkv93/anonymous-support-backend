@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package post.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/yourorg/anonymous-support/gen/post/v1;postv1";
+
+service PostService {
+  rpc CreatePost(CreatePostRequest) returns (CreatePostResponse);
+  rpc GetPost(GetPostRequest) returns (GetPostResponse);
+  rpc GetFeed(GetFeedRequest) returns (GetFeedResponse);
+  rpc DeletePost(DeletePostRequest) returns (DeletePostResponse);
+  rpc UpdatePostUrgency(UpdatePostUrgencyRequest) returns (UpdatePostUrgencyResponse);
+}
+
+enum PostType {
+  POST_TYPE_UNSPECIFIED = 0;
+  POST_TYPE_SOS = 1;
+  POST_TYPE_CHECK_IN = 2;
+  POST_TYPE_VICTORY = 3;
+  POST_TYPE_QUESTION = 4;
+}
+
+message CreatePostRequest {
+  PostType type = 1;
+  string content = 2;
+  repeated string categories = 3;
+  int32 urgency_level = 4;
+  string time_context = 5;
+  int32 days_since_relapse = 6;
+  repeated string tags = 7;
+  string visibility = 8;
+  optional string circle_id = 9;
+}
+
+message CreatePostResponse {
+  string post_id = 1;
+  google.protobuf.Timestamp created_at = 2;
+}
+
+message GetPostRequest {
+  string post_id = 1;
+}
+
+message Post {
+  string id = 1;
+  string user_id = 2;
+  string username = 3;
+  PostType type = 4;
+  string content = 5;
+  repeated string categories = 6;
+  int32 urgency_level = 7;
+  int32 response_count = 8;
+  int32 support_count = 9;
+  google.protobuf.Timestamp created_at = 10;
+  PostContext context = 11;
+}
+
+message PostContext {
+  int32 days_since_relapse = 1;
+  string time_context = 2;
+  repeated string tags = 3;
+}
+
+message GetPostResponse {
+  Post post = 1;
+}
+
+message GetFeedRequest {
+  repeated string categories = 1;
+  optional string circle_id = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+  optional PostType type_filter = 5;
+}
+
+message GetFeedResponse {
+  repeated Post posts = 1;
+  int32 total_count = 2;
+}
+
+message DeletePostRequest {
+  string post_id = 1;
+}
+
+message DeletePostResponse {
+  bool success = 1;
+}
+
+message UpdatePostUrgencyRequest {
+  string post_id = 1;
+  int32 urgency_level = 2;
+}
+
+message UpdatePostUrgencyResponse {
+  bool success = 1;
+}

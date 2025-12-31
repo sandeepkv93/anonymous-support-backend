@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package moderation.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/yourorg/anonymous-support/gen/moderation/v1;moderationv1";
+
+service ModerationService {
+  rpc ReportContent(ReportContentRequest) returns (ReportContentResponse);
+  rpc GetReports(GetReportsRequest) returns (GetReportsResponse);
+  rpc ModerateContent(ModerateContentRequest) returns (ModerateContentResponse);
+}
+
+message ReportContentRequest {
+  string content_type = 1;
+  string content_id = 2;
+  string reason = 3;
+  string description = 4;
+}
+
+message ReportContentResponse {
+  string report_id = 1;
+}
+
+message GetReportsRequest {
+  optional string status = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message Report {
+  string id = 1;
+  string reporter_id = 2;
+  string content_type = 3;
+  string content_id = 4;
+  string reason = 5;
+  string description = 6;
+  string status = 7;
+  google.protobuf.Timestamp created_at = 8;
+}
+
+message GetReportsResponse {
+  repeated Report reports = 1;
+  int32 total_count = 2;
+}
+
+message ModerateContentRequest {
+  string report_id = 1;
+  string action = 2;
+}
+
+message ModerateContentResponse {
+  bool success = 1;
+}

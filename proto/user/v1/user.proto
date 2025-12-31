@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package user.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/yourorg/anonymous-support/gen/user/v1;userv1";
+
+service UserService {
+  rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
+  rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse);
+  rpc GetStreak(GetStreakRequest) returns (GetStreakResponse);
+  rpc UpdateStreak(UpdateStreakRequest) returns (UpdateStreakResponse);
+}
+
+message GetProfileRequest {
+  string user_id = 1;
+}
+
+message UserProfile {
+  string id = 1;
+  string username = 2;
+  int32 avatar_id = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp last_active_at = 5;
+  bool is_anonymous = 6;
+  bool is_premium = 7;
+  int32 strength_points = 8;
+}
+
+message GetProfileResponse {
+  UserProfile profile = 1;
+}
+
+message UpdateProfileRequest {
+  string user_id = 1;
+  optional string username = 2;
+  optional int32 avatar_id = 3;
+}
+
+message UpdateProfileResponse {
+  bool success = 1;
+}
+
+message GetStreakRequest {
+  string user_id = 1;
+}
+
+message GetStreakResponse {
+  int32 streak_days = 1;
+  int32 total_cravings = 2;
+  int32 cravings_resisted = 3;
+  optional google.protobuf.Timestamp last_relapse_date = 4;
+}
+
+message UpdateStreakRequest {
+  string user_id = 1;
+  bool had_relapse = 2;
+}
+
+message UpdateStreakResponse {
+  bool success = 1;
+  int32 new_streak = 2;
+}

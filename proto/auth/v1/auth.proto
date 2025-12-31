@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package auth.v1;
+
+option go_package = "github.com/yourorg/anonymous-support/gen/auth/v1;authv1";
+
+service AuthService {
+  rpc RegisterAnonymous(RegisterAnonymousRequest) returns (RegisterAnonymousResponse);
+  rpc RegisterWithEmail(RegisterWithEmailRequest) returns (RegisterWithEmailResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+}
+
+message RegisterAnonymousRequest {
+  string username = 1;
+  int32 avatar_id = 2;
+}
+
+message RegisterAnonymousResponse {
+  string user_id = 1;
+  string username = 2;
+  string access_token = 3;
+  string refresh_token = 4;
+}
+
+message RegisterWithEmailRequest {
+  string username = 1;
+  string email = 2;
+  string password = 3;
+  int32 avatar_id = 4;
+}
+
+message RegisterWithEmailResponse {
+  string user_id = 1;
+  string username = 2;
+  string access_token = 3;
+  string refresh_token = 4;
+}
+
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string user_id = 1;
+  string username = 2;
+  string access_token = 3;
+  string refresh_token = 4;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message RefreshTokenResponse {
+  string access_token = 1;
+}
+
+message LogoutRequest {
+  string user_id = 1;
+}
+
+message LogoutResponse {
+  bool success = 1;
+}

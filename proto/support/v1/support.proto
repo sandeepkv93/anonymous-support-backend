@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package support.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/yourorg/anonymous-support/gen/support/v1;supportv1";
+
+service SupportService {
+  rpc CreateResponse(CreateResponseRequest) returns (CreateResponseResponse);
+  rpc GetResponses(GetResponsesRequest) returns (GetResponsesResponse);
+  rpc QuickSupport(QuickSupportRequest) returns (QuickSupportResponse);
+  rpc GetSupportStats(GetSupportStatsRequest) returns (GetSupportStatsResponse);
+}
+
+enum ResponseType {
+  RESPONSE_TYPE_UNSPECIFIED = 0;
+  RESPONSE_TYPE_QUICK = 1;
+  RESPONSE_TYPE_TEXT = 2;
+  RESPONSE_TYPE_VOICE = 3;
+}
+
+message CreateResponseRequest {
+  string post_id = 1;
+  ResponseType type = 2;
+  string content = 3;
+  optional string voice_note_url = 4;
+}
+
+message CreateResponseResponse {
+  string response_id = 1;
+  int32 strength_points_earned = 2;
+}
+
+message GetResponsesRequest {
+  string post_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message SupportResponse {
+  string id = 1;
+  string post_id = 2;
+  string user_id = 3;
+  string username = 4;
+  ResponseType type = 5;
+  string content = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+message GetResponsesResponse {
+  repeated SupportResponse responses = 1;
+  int32 total_count = 2;
+}
+
+message QuickSupportRequest {
+  string post_id = 1;
+  string quick_message_type = 2;
+}
+
+message QuickSupportResponse {
+  bool success = 1;
+  int32 total_supporters = 2;
+}
+
+message GetSupportStatsRequest {
+  string user_id = 1;
+}
+
+message GetSupportStatsResponse {
+  int32 total_responses_given = 1;
+  int32 total_responses_received = 2;
+  int32 strength_points = 3;
+  int32 people_helped = 4;
+}
