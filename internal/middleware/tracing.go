@@ -44,11 +44,7 @@ func TracingMiddleware() func(http.Handler) http.Handler {
 
 			// Set span status based on HTTP status code
 			if wrapped.statusCode >= 400 {
-				if wrapped.statusCode >= 500 {
-					span.SetStatus(codes.Error, http.StatusText(wrapped.statusCode))
-				} else {
-					span.SetStatus(codes.Error, http.StatusText(wrapped.statusCode))
-				}
+				span.SetStatus(codes.Error, http.StatusText(wrapped.statusCode))
 			} else {
 				span.SetStatus(codes.Ok, "")
 			}

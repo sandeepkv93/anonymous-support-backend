@@ -82,12 +82,14 @@ func (r *AnalyticsRepository) UpdateStreak(ctx context.Context, userID uuid.UUID
 
 func (r *AnalyticsRepository) IncrementCravings(ctx context.Context, userID uuid.UUID, resisted bool) error {
 	filter := bson.M{"user_id": userID.String()}
-	update := bson.M{
-		"$inc": bson.M{"total_cravings": 1},
-	}
+	incFields := bson.M{"total_cravings": 1}
 
 	if resisted {
-		update["$inc"].(bson.M)["cravings_resisted"] = 1
+		incFields["cravings_resisted"] = 1
+	}
+
+	update := bson.M{
+		"$inc": incFields,
 	}
 
 	opts := options.Update().SetUpsert(true)

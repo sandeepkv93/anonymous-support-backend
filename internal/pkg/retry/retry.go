@@ -103,7 +103,7 @@ func (r *Retrier) Do(ctx context.Context, operation Operation) error {
 		case <-time.After(delay):
 			// Continue to next attempt
 		case <-ctx.Done():
-			return fmt.Errorf("operation cancelled: %w", ctx.Err())
+			return fmt.Errorf("operation canceled: %w", ctx.Err())
 		}
 
 		// Calculate next delay with exponential backoff
