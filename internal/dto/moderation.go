@@ -1,7 +1,7 @@
 package dto
 
 import (
-	apperrors "github.com/anonymous-support/internal/errors"
+	apperrors "github.com/yourorg/anonymous-support/internal/errors"
 )
 
 // ReportContentRequest represents a request to report content

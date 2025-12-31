@@ -8,16 +8,16 @@ import (
 )
 
 type Config struct {
-	Server      ServerConfig
-	Postgres    PostgresConfig
-	MongoDB     MongoDBConfig
-	Redis       RedisConfig
-	JWT         JWTConfig
-	Encryption  EncryptionConfig
-	RateLimit   RateLimitConfig
-	WebSocket   WebSocketConfig
-	Moderation  ModerationConfig
-	Timeouts    TimeoutConfig
+	Server     ServerConfig
+	Postgres   PostgresConfig
+	MongoDB    MongoDBConfig
+	Redis      RedisConfig
+	JWT        JWTConfig
+	Encryption EncryptionConfig
+	RateLimit  RateLimitConfig
+	WebSocket  WebSocketConfig
+	Moderation ModerationConfig
+	Timeouts   TimeoutConfig
 }
 
 type ServerConfig struct {
@@ -77,7 +77,7 @@ type WebSocketConfig struct {
 }
 
 type ModerationConfig struct {
-	EnableAutoModeration  bool
+	EnableAutoModeration bool
 	ProfanityFilterLevel string
 }
 
@@ -150,7 +150,7 @@ func Load() (*Config, error) {
 			MaxMessageSize:  viper.GetInt("WS_MAX_MESSAGE_SIZE"),
 		},
 		Moderation: ModerationConfig{
-			EnableAutoModeration:  viper.GetBool("ENABLE_AUTO_MODERATION"),
+			EnableAutoModeration: viper.GetBool("ENABLE_AUTO_MODERATION"),
 			ProfanityFilterLevel: viper.GetString("PROFANITY_FILTER_LEVEL"),
 		},
 		Timeouts: TimeoutConfig{

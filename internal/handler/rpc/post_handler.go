@@ -178,16 +178,16 @@ func mapDomainPostTypeToProto(pt domain.PostType) postv1.PostType {
 
 func mapDomainPostToProto(post *domain.Post) *postv1.Post {
 	return &postv1.Post{
-		Id:             post.ID.Hex(),
-		UserId:         post.UserID,
-		Username:       post.Username,
-		Type:           mapDomainPostTypeToProto(post.Type),
-		Content:        post.Content,
-		Categories:     post.Categories,
-		UrgencyLevel:   int32(post.UrgencyLevel),
-		ResponseCount:  int32(post.ResponseCount),
-		SupportCount:   int32(post.SupportCount),
-		CreatedAt:      timestamppb.New(post.CreatedAt),
+		Id:            post.ID.Hex(),
+		UserId:        post.UserID,
+		Username:      post.Username,
+		Type:          mapDomainPostTypeToProto(post.Type),
+		Content:       post.Content,
+		Categories:    post.Categories,
+		UrgencyLevel:  int32(post.UrgencyLevel),
+		ResponseCount: int32(post.ResponseCount),
+		SupportCount:  int32(post.SupportCount),
+		CreatedAt:     timestamppb.New(post.CreatedAt),
 		Context: &postv1.PostContext{
 			DaysSinceRelapse: int32(post.Context.DaysSinceRelapse),
 			TimeContext:      post.Context.TimeContext,

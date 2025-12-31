@@ -3,6 +3,9 @@ package websocket
 import (
 	"sync"
 	"time"
+
+	"github.com/yourorg/anonymous-support/internal/pkg/jwt"
+	"go.uber.org/zap"
 )
 
 type Hub struct {
@@ -11,14 +14,18 @@ type Hub struct {
 	Register   chan *Client
 	Unregister chan *Client
 	mu         sync.RWMutex
+	jwtManager *jwt.Manager
+	logger     *zap.Logger
 }
 
-func NewHub() *Hub {
+func NewHub(jwtManager *jwt.Manager, logger *zap.Logger) *Hub {
 	return &Hub{
 		clients:    make(map[string]*Client),
 		broadcast:  make(chan WSMessage, 256),
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
+		jwtManager: jwtManager,
+		logger:     logger,
 	}
 }
 

@@ -19,9 +19,9 @@ type Cache struct {
 
 // Config holds cache configuration
 type Config struct {
-	Prefix         string
-	DefaultTTL     time.Duration
-	EnableLogging  bool
+	Prefix        string
+	DefaultTTL    time.Duration
+	EnableLogging bool
 }
 
 // NewCache creates a new cache instance

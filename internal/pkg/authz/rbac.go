@@ -8,15 +8,11 @@ import (
 	"github.com/yourorg/anonymous-support/internal/domain"
 )
 
-// Permission represents a specific permission
-type Permission string
-
 const (
 	// User permissions
 	PermissionCreatePost     Permission = "post:create"
 	PermissionReadPost       Permission = "post:read"
 	PermissionUpdatePost     Permission = "post:update"
-	PermissionDeletePost     Permission = "post:delete"
 	PermissionCreateResponse Permission = "response:create"
 	PermissionReadResponse   Permission = "response:read"
 
@@ -27,20 +23,19 @@ const (
 	PermissionLeaveCircle  Permission = "circle:leave"
 	PermissionManageCircle Permission = "circle:manage"
 
-	// Moderation permissions
-	PermissionViewReports     Permission = "moderation:view_reports"
-	PermissionModerateContent Permission = "moderation:moderate_content"
-	PermissionBanUser         Permission = "moderation:ban_user"
-	PermissionUnbanUser       Permission = "moderation:unban_user"
+	// Moderation permissions (overriding from authz.go)
+	PermissionModerateContentExt Permission = "moderation:moderate_content"
+	PermissionBanUserExt         Permission = "moderation:ban_user"
+	PermissionUnbanUser          Permission = "moderation:unban_user"
 
 	// Admin permissions
-	PermissionManageUsers Permission = "admin:manage_users"
-	PermissionViewMetrics Permission = "admin:view_metrics"
+	PermissionManageUsers  Permission = "admin:manage_users"
+	PermissionViewMetrics  Permission = "admin:view_metrics"
 	PermissionManageSystem Permission = "admin:manage_system"
 )
 
 // RolePermissions maps roles to their permissions
-var RolePermissions = map[domain.UserRole][]Permission{
+var RolePermissions = map[domain.Role][]Permission{
 	domain.RoleUser: {
 		PermissionCreatePost,
 		PermissionReadPost,
@@ -103,7 +98,7 @@ func NewAuthorizer() *Authorizer {
 }
 
 // HasPermission checks if a role has a specific permission
-func (a *Authorizer) HasPermission(role domain.UserRole, permission Permission) bool {
+func (a *Authorizer) HasPermission(role domain.Role, permission Permission) bool {
 	permissions, ok := RolePermissions[role]
 	if !ok {
 		return false
@@ -118,7 +113,7 @@ func (a *Authorizer) HasPermission(role domain.UserRole, permission Permission) 
 }
 
 // HasAnyPermission checks if a role has any of the specified permissions
-func (a *Authorizer) HasAnyPermission(role domain.UserRole, permissions ...Permission) bool {
+func (a *Authorizer) HasAnyPermission(role domain.Role, permissions ...Permission) bool {
 	for _, permission := range permissions {
 		if a.HasPermission(role, permission) {
 			return true
@@ -128,7 +123,7 @@ func (a *Authorizer) HasAnyPermission(role domain.UserRole, permissions ...Permi
 }
 
 // HasAllPermissions checks if a role has all of the specified permissions
-func (a *Authorizer) HasAllPermissions(role domain.UserRole, permissions ...Permission) bool {
+func (a *Authorizer) HasAllPermissions(role domain.Role, permissions ...Permission) bool {
 	for _, permission := range permissions {
 		if !a.HasPermission(role, permission) {
 			return false
@@ -138,7 +133,7 @@ func (a *Authorizer) HasAllPermissions(role domain.UserRole, permissions ...Perm
 }
 
 // CanAccessResource checks if a user can access a specific resource
-func (a *Authorizer) CanAccessResource(ctx context.Context, userID uuid.UUID, role domain.UserRole, resourceOwnerID uuid.UUID, permission Permission) error {
+func (a *Authorizer) CanAccessResource(ctx context.Context, userID uuid.UUID, role domain.Role, resourceOwnerID uuid.UUID, permission Permission) error {
 	// Check if the user has the permission
 	if !a.HasPermission(role, permission) {
 		return fmt.Errorf("user does not have permission: %s", permission)
@@ -155,7 +150,7 @@ func (a *Authorizer) CanAccessResource(ctx context.Context, userID uuid.UUID, ro
 }
 
 // RequirePermission returns an error if the role doesn't have the permission
-func (a *Authorizer) RequirePermission(role domain.UserRole, permission Permission) error {
+func (a *Authorizer) RequirePermission(role domain.Role, permission Permission) error {
 	if !a.HasPermission(role, permission) {
 		return fmt.Errorf("permission denied: %s", permission)
 	}
@@ -163,7 +158,7 @@ func (a *Authorizer) RequirePermission(role domain.UserRole, permission Permissi
 }
 
 // RequireRole returns an error if the role is not one of the allowed roles
-func (a *Authorizer) RequireRole(role domain.UserRole, allowedRoles ...domain.UserRole) error {
+func (a *Authorizer) RequireRole(role domain.Role, allowedRoles ...domain.Role) error {
 	for _, allowedRole := range allowedRoles {
 		if role == allowedRole {
 			return nil
@@ -173,11 +168,11 @@ func (a *Authorizer) RequireRole(role domain.UserRole, allowedRoles ...domain.Us
 }
 
 // IsModerator checks if a role is moderator or admin
-func (a *Authorizer) IsModerator(role domain.UserRole) bool {
+func (a *Authorizer) IsModerator(role domain.Role) bool {
 	return role == domain.RoleModerator || role == domain.RoleAdmin
 }
 
 // IsAdmin checks if a role is admin
-func (a *Authorizer) IsAdmin(role domain.UserRole) bool {
+func (a *Authorizer) IsAdmin(role domain.Role) bool {
 	return role == domain.RoleAdmin
 }

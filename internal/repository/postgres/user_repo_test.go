@@ -34,12 +34,13 @@ func TestUserRepository_Create(t *testing.T) {
 	repo := postgres.NewUserRepository(db)
 
 	ctx := context.Background()
+	email := "test@example.com"
 	user := &domain.User{
 		ID:             uuid.New(),
 		Username:       "testuser",
-		Email:          "test@example.com",
+		Email:          &email,
 		PasswordHash:   "hashed_password",
-		AvatarID:       "avatar1",
+		AvatarID:       1,
 		IsAnonymous:    false,
 		StrengthPoints: 0,
 	}
@@ -62,12 +63,13 @@ func TestUserRepository_GetByID(t *testing.T) {
 	ctx := context.Background()
 
 	// Create test user
+	email := "test@example.com"
 	user := &domain.User{
 		ID:             uuid.New(),
 		Username:       "testuser",
-		Email:          "test@example.com",
+		Email:          &email,
 		PasswordHash:   "hashed_password",
-		AvatarID:       "avatar1",
+		AvatarID:       1,
 		IsAnonymous:    false,
 		StrengthPoints: 0,
 	}
@@ -102,12 +104,13 @@ func TestUserRepository_UsernameExists(t *testing.T) {
 	assert.False(t, exists)
 
 	// Create user
+	email2 := "test@example.com"
 	user := &domain.User{
 		ID:             uuid.New(),
 		Username:       username,
-		Email:          "test@example.com",
+		Email:          &email2,
 		PasswordHash:   "hashed_password",
-		AvatarID:       "avatar1",
+		AvatarID:       1,
 		IsAnonymous:    false,
 		StrengthPoints: 0,
 	}
@@ -133,12 +136,13 @@ func TestUserRepository_UpdateStrengthPoints(t *testing.T) {
 	ctx := context.Background()
 
 	// Create user
+	email4 := "test@example.com"
 	user := &domain.User{
 		ID:             uuid.New(),
 		Username:       "testuser",
-		Email:          "test@example.com",
+		Email:          &email4,
 		PasswordHash:   "hashed_password",
-		AvatarID:       "avatar1",
+		AvatarID:       1,
 		IsAnonymous:    false,
 		StrengthPoints: 100,
 	}

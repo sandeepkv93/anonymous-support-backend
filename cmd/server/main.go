@@ -144,7 +144,7 @@ func main() {
 	circleRPC := rpcHandler.NewCircleHandler(circleService)
 	moderationRPC := rpcHandler.NewModerationHandler(modService)
 
-	hub := wsHandler.NewHub()
+	hub := wsHandler.NewHub(jwtManager, logger)
 	go hub.Run()
 
 	// Create health handler

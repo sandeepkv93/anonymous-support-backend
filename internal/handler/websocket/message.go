@@ -25,20 +25,6 @@ type WSMessage struct {
 	Timestamp time.Time       `json:"timestamp"`
 }
 
-type NewPostEvent struct {
-	PostID       string   `json:"post_id"`
-	Type         string   `json:"type"`
-	Username     string   `json:"username"`
-	Categories   []string `json:"categories"`
-	UrgencyLevel int      `json:"urgency_level"`
-}
-
-type NewResponseEvent struct {
-	PostID       string `json:"post_id"`
-	ResponseID   string `json:"response_id"`
-	Username     string `json:"username"`
-	ResponseType string `json:"response_type"`
-}
 
 type SupporterCountEvent struct {
 	PostID    string `json:"post_id"`

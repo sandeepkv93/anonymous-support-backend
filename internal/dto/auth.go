@@ -1,9 +1,11 @@
 package dto
 
 import (
-	"github.com/anonymous-support/internal/domain"
-	apperrors "github.com/anonymous-support/internal/errors"
-	"github.com/anonymous-support/internal/pkg/validator"
+	"fmt"
+
+	"github.com/yourorg/anonymous-support/internal/domain"
+	apperrors "github.com/yourorg/anonymous-support/internal/errors"
+	"github.com/yourorg/anonymous-support/internal/pkg/validator"
 )
 
 // RegisterAnonymousRequest represents a request to register an anonymous user
@@ -83,7 +85,7 @@ type UserDTO struct {
 	Username       string
 	Email          string
 	AvatarID       string
-	Role           domain.UserRole
+	Role           domain.Role
 	IsAnonymous    bool
 	IsPremium      bool
 	StrengthPoints int
@@ -93,11 +95,15 @@ type UserDTO struct {
 
 // NewUserDTO creates a UserDTO from a domain.User
 func NewUserDTO(user *domain.User) *UserDTO {
+	email := ""
+	if user.Email != nil {
+		email = *user.Email
+	}
 	return &UserDTO{
 		ID:             user.ID.String(),
 		Username:       user.Username,
-		Email:          user.Email,
-		AvatarID:       user.AvatarID,
+		Email:          email,
+		AvatarID:       fmt.Sprintf("%d", user.AvatarID),
 		Role:           user.Role,
 		IsAnonymous:    user.IsAnonymous,
 		IsPremium:      user.IsPremium,

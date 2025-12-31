@@ -35,14 +35,14 @@ func (s *PostService) CreatePost(ctx context.Context, userID, username string, p
 	}
 
 	post := &domain.Post{
-		UserID:        userID,
-		Username:      username,
-		Type:          postType,
-		Content:       content,
-		Categories:    categories,
-		UrgencyLevel:  urgencyLevel,
-		Visibility:    visibility,
-		CircleID:      circleID,
+		UserID:       userID,
+		Username:     username,
+		Type:         postType,
+		Content:      content,
+		Categories:   categories,
+		UrgencyLevel: urgencyLevel,
+		Visibility:   visibility,
+		CircleID:     circleID,
 		Context: domain.PostContext{
 			DaysSinceRelapse: daysSinceRelapse,
 			TimeContext:      timeContext,

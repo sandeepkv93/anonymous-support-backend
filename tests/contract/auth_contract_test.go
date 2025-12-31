@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	authv1 "github.com/yourorg/anonymous-support/gen/api/auth/v1"
-	"github.com/yourorg/anonymous-support/gen/api/auth/v1/authv1connect"
+	authv1 "github.com/yourorg/anonymous-support/gen/auth/v1"
+	"github.com/yourorg/anonymous-support/gen/auth/v1/authv1connect"
 )
 
 // Contract tests verify the API contract matches the protobuf specification

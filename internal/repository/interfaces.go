@@ -54,9 +54,9 @@ type CircleRepository interface {
 
 // ModerationRepository defines the interface for moderation data persistence
 type ModerationRepository interface {
-	CreateReport(ctx context.Context, report *domain.Report) error
-	GetReportByID(ctx context.Context, id uuid.UUID) (*domain.Report, error)
-	ListReports(ctx context.Context, status *string, limit, offset int) ([]*domain.Report, error)
+	CreateReport(ctx context.Context, report *domain.ContentReport) error
+	GetReportByID(ctx context.Context, id uuid.UUID) (*domain.ContentReport, error)
+	ListReports(ctx context.Context, status *string, limit, offset int) ([]*domain.ContentReport, error)
 	UpdateReportStatus(ctx context.Context, id uuid.UUID, status string, reviewedBy uuid.UUID, notes string) error
 	CreateBlock(ctx context.Context, blockerID, blockedID uuid.UUID) error
 	RemoveBlock(ctx context.Context, blockerID, blockedID uuid.UUID) error

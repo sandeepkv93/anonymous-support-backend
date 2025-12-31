@@ -22,10 +22,10 @@ type HealthHandler struct {
 }
 
 type HealthResponse struct {
-	Status      string                 `json:"status"`
-	Version     string                 `json:"version"`
-	Environment string                 `json:"environment"`
-	Timestamp   string                 `json:"timestamp"`
+	Status       string                      `json:"status"`
+	Version      string                      `json:"version"`
+	Environment  string                      `json:"environment"`
+	Timestamp    string                      `json:"timestamp"`
 	Dependencies map[string]DependencyHealth `json:"dependencies"`
 }
 
@@ -76,10 +76,10 @@ func (h *HealthHandler) Check(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := HealthResponse{
-		Status:      overallStatus,
-		Version:     h.version,
-		Environment: h.environment,
-		Timestamp:   time.Now().UTC().Format(time.RFC3339),
+		Status:       overallStatus,
+		Version:      h.version,
+		Environment:  h.environment,
+		Timestamp:    time.Now().UTC().Format(time.RFC3339),
 		Dependencies: deps,
 	}
 

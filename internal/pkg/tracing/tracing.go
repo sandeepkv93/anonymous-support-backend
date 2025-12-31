@@ -6,6 +6,7 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
@@ -27,10 +28,10 @@ type TracerProvider struct {
 
 // Config holds the tracing configuration
 type Config struct {
-	Enabled      bool
-	Endpoint     string // OTLP gRPC endpoint (e.g., "localhost:4317")
-	Environment  string // development, staging, production
-	SampleRate   float64 // Sampling rate (0.0 to 1.0)
+	Enabled     bool
+	Endpoint    string  // OTLP gRPC endpoint (e.g., "localhost:4317")
+	Environment string  // development, staging, production
+	SampleRate  float64 // Sampling rate (0.0 to 1.0)
 }
 
 // NewTracerProvider creates and configures an OpenTelemetry tracer provider
@@ -140,7 +141,7 @@ func RecordError(ctx context.Context, err error, opts ...trace.EventOption) {
 }
 
 // SetSpanStatus sets the status of the current span
-func SetSpanStatus(ctx context.Context, code trace.StatusCode, description string) {
+func SetSpanStatus(ctx context.Context, code codes.Code, description string) {
 	span := trace.SpanFromContext(ctx)
 	if span.IsRecording() {
 		span.SetStatus(code, description)

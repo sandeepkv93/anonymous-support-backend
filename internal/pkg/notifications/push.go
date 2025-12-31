@@ -9,12 +9,12 @@ import (
 
 // PushNotification represents a push notification to be sent
 type PushNotification struct {
-	Token   string
-	Title   string
-	Body    string
-	Data    map[string]string
-	Badge   *int
-	Sound   string
+	Token string
+	Title string
+	Body  string
+	Data  map[string]string
+	Badge *int
+	Sound string
 }
 
 // PushNotificationProvider defines the interface for push notification providers

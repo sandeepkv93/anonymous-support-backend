@@ -1,21 +1,21 @@
 package dto
 
 import (
-	"github.com/anonymous-support/internal/domain"
-	apperrors "github.com/anonymous-support/internal/errors"
-	"github.com/anonymous-support/internal/pkg/validator"
+	"github.com/yourorg/anonymous-support/internal/domain"
+	apperrors "github.com/yourorg/anonymous-support/internal/errors"
+	"github.com/yourorg/anonymous-support/internal/pkg/validator"
 )
 
 // CreatePostRequest represents a request to create a post
 type CreatePostRequest struct {
-	Type            domain.PostType
-	Content         string
-	Categories      []string
-	UrgencyLevel    int32
+	Type             domain.PostType
+	Content          string
+	Categories       []string
+	UrgencyLevel     int32
 	DaysSinceRelapse int32
-	TimeContext     string
-	Tags            []string
-	CircleID        string
+	TimeContext      string
+	Tags             []string
+	CircleID         string
 }
 
 // Validate validates the request
@@ -107,23 +107,31 @@ type PostDTO struct {
 
 // NewPostDTO creates a PostDTO from a domain.Post
 func NewPostDTO(post *domain.Post) *PostDTO {
+	circleID := ""
+	if post.CircleID != nil {
+		circleID = *post.CircleID
+	}
+	expiresAt := ""
+	if post.ExpiresAt != nil {
+		expiresAt = post.ExpiresAt.Format("2006-01-02T15:04:05Z07:00")
+	}
 	return &PostDTO{
 		ID:               post.ID.Hex(),
-		UserID:           post.UserID.String(),
+		UserID:           post.UserID,
 		Username:         post.Username,
 		Type:             string(post.Type),
 		Content:          post.Content,
 		Categories:       post.Categories,
-		UrgencyLevel:     post.UrgencyLevel,
-		DaysSinceRelapse: post.Context.DaysSinceRelapse,
+		UrgencyLevel:     int32(post.UrgencyLevel),
+		DaysSinceRelapse: int32(post.Context.DaysSinceRelapse),
 		TimeContext:      post.Context.TimeContext,
 		Tags:             post.Context.Tags,
 		Visibility:       string(post.Visibility),
-		CircleID:         post.CircleID,
-		ResponseCount:    post.ResponseCount,
-		SupportCount:     post.SupportCount,
+		CircleID:         circleID,
+		ResponseCount:    int32(post.ResponseCount),
+		SupportCount:     int32(post.SupportCount),
 		CreatedAt:        post.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
-		ExpiresAt:        post.ExpiresAt.Format("2006-01-02T15:04:05Z07:00"),
+		ExpiresAt:        expiresAt,
 		IsModerated:      post.IsModerated,
 	}
 }

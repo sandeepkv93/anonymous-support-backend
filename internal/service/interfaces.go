@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/yourorg/anonymous-support/internal/domain"
 	"github.com/yourorg/anonymous-support/internal/dto"
 )
 

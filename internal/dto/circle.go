@@ -1,8 +1,8 @@
 package dto
 
 import (
-	"github.com/anonymous-support/internal/domain"
-	apperrors "github.com/anonymous-support/internal/errors"
+	"github.com/yourorg/anonymous-support/internal/domain"
+	apperrors "github.com/yourorg/anonymous-support/internal/errors"
 )
 
 // CreateCircleRequest represents a request to create a circle
@@ -110,12 +110,12 @@ func NewCircleDTO(circle *domain.Circle) *CircleDTO {
 		Name:        circle.Name,
 		Description: circle.Description,
 		Category:    circle.Category,
-		MaxMembers:  circle.MaxMembers,
-		MemberCount: circle.MemberCount,
+		MaxMembers:  int32(circle.MaxMembers),
+		MemberCount: int32(circle.MemberCount),
 		IsPrivate:   circle.IsPrivate,
 		CreatedBy:   circle.CreatedBy.String(),
 		CreatedAt:   circle.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
-		UpdatedAt:   circle.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		UpdatedAt:   circle.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 	}
 }
 
@@ -128,11 +128,11 @@ type CircleListResponse struct {
 
 // CircleMemberDTO represents a circle member
 type CircleMemberDTO struct {
-	UserID       string
-	Username     string
-	AvatarID     string
-	JoinedAt     string
-	IsAnonymous  bool
+	UserID      string
+	Username    string
+	AvatarID    string
+	JoinedAt    string
+	IsAnonymous bool
 }
 
 // CircleMembersResponse represents a list of circle members

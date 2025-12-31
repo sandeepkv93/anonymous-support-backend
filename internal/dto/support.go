@@ -1,9 +1,9 @@
 package dto
 
 import (
-	"github.com/anonymous-support/internal/domain"
-	apperrors "github.com/anonymous-support/internal/errors"
-	"github.com/anonymous-support/internal/pkg/validator"
+	"github.com/yourorg/anonymous-support/internal/domain"
+	apperrors "github.com/yourorg/anonymous-support/internal/errors"
+	"github.com/yourorg/anonymous-support/internal/pkg/validator"
 )
 
 // CreateResponseRequest represents a request to create a support response
@@ -82,15 +82,19 @@ type SupportResponseDTO struct {
 
 // NewSupportResponseDTO creates a SupportResponseDTO from a domain.SupportResponse
 func NewSupportResponseDTO(response *domain.SupportResponse) *SupportResponseDTO {
+	voiceNoteURL := ""
+	if response.VoiceNoteURL != nil {
+		voiceNoteURL = *response.VoiceNoteURL
+	}
 	return &SupportResponseDTO{
 		ID:             response.ID.Hex(),
-		PostID:         response.PostID.Hex(),
-		UserID:         response.UserID.String(),
+		PostID:         response.PostID,
+		UserID:         response.UserID,
 		Username:       response.Username,
 		Type:           string(response.Type),
 		Content:        response.Content,
-		VoiceNoteURL:   response.VoiceNoteURL,
-		StrengthPoints: response.StrengthPoints,
+		VoiceNoteURL:   voiceNoteURL,
+		StrengthPoints: int32(response.StrengthPoints),
 		CreatedAt:      response.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 	}
 }

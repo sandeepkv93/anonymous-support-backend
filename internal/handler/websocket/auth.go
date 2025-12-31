@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/yourorg/anonymous-support/internal/pkg/jwt"
 	"go.uber.org/zap"
 )
 

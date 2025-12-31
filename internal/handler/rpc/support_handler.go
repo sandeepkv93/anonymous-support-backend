@@ -56,7 +56,7 @@ func (h *SupportHandler) CreateResponse(
 	}
 
 	res := connect.NewResponse(&supportv1.CreateResponseResponse{
-		ResponseId:          responseID,
+		ResponseId:           responseID,
 		StrengthPointsEarned: int32(strengthPoints),
 	})
 

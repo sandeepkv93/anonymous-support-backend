@@ -1,8 +1,8 @@
 package dto
 
 import (
-	apperrors "github.com/anonymous-support/internal/errors"
-	"github.com/anonymous-support/internal/pkg/validator"
+	apperrors "github.com/yourorg/anonymous-support/internal/errors"
+	"github.com/yourorg/anonymous-support/internal/pkg/validator"
 )
 
 // UpdateProfileRequest represents a request to update user profile
@@ -34,13 +34,13 @@ func (r *UpdateStreakRequest) Validate() error {
 
 // StreakDTO represents recovery streak data
 type StreakDTO struct {
-	StreakDays          int32
-	LastRelapseDate     string
-	TotalCravings       int32
-	CravingsResisted    int32
+	StreakDays           int32
+	LastRelapseDate      string
+	TotalCravings        int32
+	CravingsResisted     int32
 	VulnerabilityPattern string
-	Goals               []string
-	Milestones          []string
+	Goals                []string
+	Milestones           []string
 }
 
 // ProfileDTO represents complete user profile data

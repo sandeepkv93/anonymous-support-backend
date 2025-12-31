@@ -30,13 +30,13 @@ func (h *UserHandler) GetProfile(
 
 	res := connect.NewResponse(&userv1.GetProfileResponse{
 		Profile: &userv1.UserProfile{
-			Id:           user.ID.String(),
-			Username:     user.Username,
-			AvatarId:     int32(user.AvatarID),
-			CreatedAt:    timestamppb.New(user.CreatedAt),
-			LastActiveAt: timestamppb.New(user.LastActiveAt),
-			IsAnonymous:  user.IsAnonymous,
-			IsPremium:    user.IsPremium,
+			Id:             user.ID.String(),
+			Username:       user.Username,
+			AvatarId:       int32(user.AvatarID),
+			CreatedAt:      timestamppb.New(user.CreatedAt),
+			LastActiveAt:   timestamppb.New(user.LastActiveAt),
+			IsAnonymous:    user.IsAnonymous,
+			IsPremium:      user.IsPremium,
 			StrengthPoints: int32(user.StrengthPoints),
 		},
 	})

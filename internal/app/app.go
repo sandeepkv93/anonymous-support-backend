@@ -29,8 +29,8 @@ type Application struct {
 	Logger *zap.Logger
 
 	// Database clients
-	PostgresDB *sqlx.DB
-	MongoDB    *mongo.Database
+	PostgresDB  *sqlx.DB
+	MongoDB     *mongo.Database
 	RedisClient *redis.Client
 
 	// Repositories
@@ -78,7 +78,7 @@ func New(cfg *config.Config, logger *zap.Logger, postgresDB *sqlx.DB, mongoDB *m
 	app.JWTManager = jwt.NewJWTManager(cfg.JWT.Secret, cfg.JWT.AccessExpiry, cfg.JWT.RefreshExpiry)
 
 	// Initialize WebSocket hub
-	app.WSHub = websocket.NewHub(logger)
+	app.WSHub = websocket.NewHub(app.JWTManager, logger)
 
 	// Initialize services
 	if err := app.wireServices(); err != nil {

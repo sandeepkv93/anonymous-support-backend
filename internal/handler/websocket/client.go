@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -15,20 +16,26 @@ const (
 )
 
 type Client struct {
-	hub      *Hub
-	conn     *websocket.Conn
-	send     chan []byte
-	userID   string
-	username string
+	hub             *Hub
+	conn            *websocket.Conn
+	send            chan []byte
+	userID          string
+	username        string
+	UserID          *uuid.UUID
+	Username        string
+	IsAuthenticated bool
+	Channels        map[string]bool
 }
 
 func NewClient(hub *Hub, conn *websocket.Conn, userID, username string) *Client {
 	return &Client{
-		hub:      hub,
-		conn:     conn,
-		send:     make(chan []byte, 256),
-		userID:   userID,
-		username: username,
+		hub:             hub,
+		conn:            conn,
+		send:            make(chan []byte, 256),
+		userID:          userID,
+		username:        username,
+		IsAuthenticated: false,
+		Channels:        make(map[string]bool),
 	}
 }
 

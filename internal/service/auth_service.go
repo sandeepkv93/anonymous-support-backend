@@ -5,13 +5,13 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 	"github.com/yourorg/anonymous-support/internal/domain"
 	"github.com/yourorg/anonymous-support/internal/pkg/encryption"
 	"github.com/yourorg/anonymous-support/internal/pkg/jwt"
 	"github.com/yourorg/anonymous-support/internal/pkg/validator"
 	"github.com/yourorg/anonymous-support/internal/repository/postgres"
 	"github.com/yourorg/anonymous-support/internal/repository/redis"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthService struct {

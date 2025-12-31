@@ -16,7 +16,7 @@ func main() {
 	fmt.Println("Starting database seeding...")
 
 	// Load configuration
-	cfg, err := config.Load()
+	_, err := config.Load()
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
@@ -45,7 +45,7 @@ func seedUsers(ctx context.Context) {
 		username string
 		email    string
 		password string
-		role     domain.UserRole
+		role     domain.Role
 	}{
 		{"admin_user", "admin@example.com", "AdminPass123!", domain.RoleAdmin},
 		{"moderator_user", "mod@example.com", "ModPass123!", domain.RoleModerator},
@@ -65,10 +65,15 @@ func seedUsers(ctx context.Context) {
 			hashedPassword = string(hash)
 		}
 
+		var email *string
+		if u.email != "" {
+			email = &u.email
+		}
+
 		user := &domain.User{
 			ID:             uuid.New(),
 			Username:       u.username,
-			Email:          u.email,
+			Email:          email,
 			PasswordHash:   hashedPassword,
 			Role:           u.role,
 			IsAnonymous:    u.email == "",
@@ -88,7 +93,7 @@ func seedCircles(ctx context.Context) {
 		name        string
 		description string
 		category    string
-		maxMembers  int32
+		maxMembers  int
 	}{
 		{"Daily Check-In", "Daily accountability and support", "general", 1000},
 		{"Evening Warriors", "Support for evening triggers", "alcohol", 500},
@@ -107,7 +112,6 @@ func seedCircles(ctx context.Context) {
 			IsPrivate:   false,
 			CreatedBy:   uuid.New(), // Should be actual user ID
 			CreatedAt:   time.Now(),
-			UpdatedAt:   time.Now(),
 		}
 
 		// TODO: Save to database
