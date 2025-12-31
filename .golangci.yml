@@ -1,32 +1,8 @@
-run:
-  timeout: 5m
-  tests: true
-  modules-download-mode: readonly
-
-linters:
-  enable:
-    - errcheck
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - unused
-    - gofmt
-    - goimports
-    - misspell
-    - goconst
-    - unconvert
-    - dupl
-    - bodyclose
-    - noctx
-    - rowserrcheck
-    - sqlclosecheck
-  disable:
-    - gocyclo
-    - gosec
-    - exportloopref
-
 linters-settings:
+  govet:
+    enable-all: true
+    disable:
+      - shadow
   gocyclo:
     min-complexity: 15
   dupl:
@@ -36,16 +12,69 @@ linters-settings:
     min-occurrences: 3
   misspell:
     locale: US
+  lll:
+    line-length: 140
+  goimports:
+    local-prefixes: github.com/yourorg/anonymous-support
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - experimental
+      - opinionated
+      - performance
+      - style
+  funlen:
+    lines: 100
+    statements: 50
+
+linters:
+  disable-all: true
+  enable:
+    - bodyclose
+    - dupl
+    - errcheck
+    - funlen
+    - goconst
+    - gocritic
+    - gocyclo
+    - gofmt
+    - goimports
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - lll
+    - misspell
+    - prealloc
+    - revive
+    - staticcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unused
+    - whitespace
 
 issues:
   exclude-rules:
     - path: _test\.go
       linters:
+        - gocyclo
+        - errcheck
         - dupl
         - gosec
-        - goconst
-    - path: internal/handler/rpc/
+        - funlen
+    - path: gen/
       linters:
-        - dupl
+        - all
+
   max-issues-per-linter: 0
   max-same-issues: 0
+
+run:
+  timeout: 5m
+  skip-dirs:
+    - gen
+    - vendor
+  skip-files:
+    - ".*\\.pb\\.go$"
+    - ".*\\.connect\\.go$"

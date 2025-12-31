@@ -6,10 +6,14 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/websocket"
 	"github.com/jmoiron/sqlx"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 
 	authv1connect "github.com/yourorg/anonymous-support/gen/auth/v1/authv1connect"
 	circlev1connect "github.com/yourorg/anonymous-support/gen/circle/v1/circlev1connect"
@@ -18,18 +22,31 @@ import (
 	supportv1connect "github.com/yourorg/anonymous-support/gen/support/v1/supportv1connect"
 	userv1connect "github.com/yourorg/anonymous-support/gen/user/v1/userv1connect"
 	"github.com/yourorg/anonymous-support/internal/config"
+	"github.com/yourorg/anonymous-support/internal/handler"
 	"github.com/yourorg/anonymous-support/internal/handler/rpc"
-	"github.com/yourorg/anonymous-support/internal/handler/websocket"
+	wsHandler "github.com/yourorg/anonymous-support/internal/handler/websocket"
 	"github.com/yourorg/anonymous-support/internal/middleware"
+	"github.com/yourorg/anonymous-support/internal/pkg/cache"
 	"github.com/yourorg/anonymous-support/internal/pkg/encryption"
 	"github.com/yourorg/anonymous-support/internal/pkg/jwt"
+	"github.com/yourorg/anonymous-support/internal/pkg/migrations"
 	"github.com/yourorg/anonymous-support/internal/pkg/moderator"
+	"github.com/yourorg/anonymous-support/internal/pkg/tracing"
+	"github.com/yourorg/anonymous-support/internal/pkg/transaction"
 	"github.com/yourorg/anonymous-support/internal/repository"
 	"github.com/yourorg/anonymous-support/internal/repository/mongodb"
 	"github.com/yourorg/anonymous-support/internal/repository/postgres"
 	redisrepo "github.com/yourorg/anonymous-support/internal/repository/redis"
 	"github.com/yourorg/anonymous-support/internal/service"
 )
+
+const version = "1.0.0"
+
+var wsUpgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+	CheckOrigin:     func(r *http.Request) bool { return true },
+}
 
 // Application represents the entire application with all its dependencies
 type Application struct {
@@ -51,6 +68,7 @@ type Application struct {
 	RealtimeRepo   repository.RealtimeRepository
 	CacheRepo      repository.CacheRepository
 	AnalyticsRepo  repository.AnalyticsRepository
+	AuditRepo      repository.AuditRepository
 
 	// Services
 	AuthService       *service.AuthService
@@ -64,7 +82,10 @@ type Application struct {
 	// Infrastructure
 	JWTManager        *jwt.JWTManager
 	EncryptionManager *encryption.Manager
-	WSHub             *websocket.Hub
+	TxManager         *transaction.Manager
+	Cache             *cache.Cache
+	WSHub             *wsHandler.Hub
+	TracerProvider    *tracing.TracerProvider
 
 	// HTTP Server
 	HTTPServer *http.Server
@@ -93,8 +114,34 @@ func New(cfg *config.Config, logger *zap.Logger, postgresDB *sqlx.DB, mongoDB *m
 	}
 	app.EncryptionManager = encManager
 
+	// Initialize transaction manager
+	app.TxManager = transaction.NewManager(postgresDB, logger)
+
+	// Initialize cache
+	app.Cache = cache.NewCache(redisClient, logger, cache.Config{
+		Prefix:     "app",
+		DefaultTTL: 5 * time.Minute,
+	})
+
 	// Initialize WebSocket hub
-	app.WSHub = websocket.NewHub(app.JWTManager, logger)
+	app.WSHub = wsHandler.NewHub(app.JWTManager, logger)
+
+	// Initialize tracing
+	tracerProvider, err := tracing.NewTracerProvider(context.Background(), tracing.Config{
+		Enabled:     cfg.Server.Env == "production" || cfg.Server.Env == "staging",
+		Endpoint:    "localhost:4317", // Configure via env var
+		Environment: cfg.Server.Env,
+		SampleRate:  1.0, // 100% sampling for now
+	})
+	if err != nil {
+		logger.Warn("Failed to initialize tracing", zap.Error(err))
+	}
+	app.TracerProvider = tracerProvider
+
+	// Run MongoDB migrations
+	if err := migrations.RunMongoDBMigrations(context.Background(), mongoDB); err != nil {
+		logger.Warn("Failed to run MongoDB migrations", zap.Error(err))
+	}
 
 	// Initialize services
 	if err := app.wireServices(); err != nil {
@@ -110,6 +157,7 @@ func (a *Application) wireRepositories() {
 	a.UserRepo = postgres.NewUserRepository(a.PostgresDB)
 	a.CircleRepo = postgres.NewCircleRepository(a.PostgresDB)
 	a.ModerationRepo = postgres.NewModerationRepository(a.PostgresDB)
+	a.AuditRepo = postgres.NewAuditRepository(a.PostgresDB)
 
 	// MongoDB repositories
 	a.PostRepo = mongodb.NewPostRepository(a.MongoDB)
@@ -130,6 +178,7 @@ func (a *Application) wireServices() error {
 		a.SessionRepo.(*redisrepo.SessionRepository),
 		a.JWTManager,
 		a.EncryptionManager,
+		a.AuditRepo.(*postgres.AuditRepository),
 	)
 
 	// User service
@@ -141,7 +190,7 @@ func (a *Application) wireServices() error {
 	postRepo := a.PostRepo.(*mongodb.PostRepository)
 	realtimeRepo := a.RealtimeRepo.(*redisrepo.RealtimeRepository)
 	contentFilter := moderator.NewContentFilter(a.Config.Moderation.ProfanityFilterLevel)
-	a.PostService = service.NewPostService(postRepo, realtimeRepo, contentFilter)
+	a.PostService = service.NewPostService(postRepo, realtimeRepo, contentFilter, a.Cache)
 
 	// Support service
 	supportRepo := a.SupportRepo.(*mongodb.SupportRepository)
@@ -149,7 +198,7 @@ func (a *Application) wireServices() error {
 
 	// Circle service
 	circleRepo := a.CircleRepo.(*postgres.CircleRepository)
-	a.CircleService = service.NewCircleService(circleRepo, postRepo)
+	a.CircleService = service.NewCircleService(circleRepo, postRepo, a.TxManager)
 
 	// Moderation service
 	modRepo := a.ModerationRepo.(*postgres.ModerationRepository)
@@ -192,6 +241,14 @@ func (a *Application) Stop(ctx context.Context) error {
 	if a.WSHub != nil {
 		a.Logger.Info("Stopping WebSocket hub")
 		a.WSHub.Stop()
+	}
+
+	// Shutdown tracing
+	if a.TracerProvider != nil {
+		a.Logger.Info("Shutting down tracing")
+		if err := a.TracerProvider.Shutdown(shutdownCtx); err != nil {
+			a.Logger.Error("Error shutting down tracing", zap.Error(err))
+		}
 	}
 
 	// Close database connections
@@ -247,20 +304,37 @@ func (a *Application) SetupHTTPServer() error {
 	mux.Handle(circlePath, circleHTTPHandler)
 	mux.Handle(moderationPath, moderationHTTPHandler)
 
+	// WebSocket endpoint with auth middleware
+	mux.Handle("/ws", middleware.AuthMiddleware(a.JWTManager)(http.HandlerFunc(a.handleWebSocket)))
+
+	// Health check endpoints
+	healthHandler := handler.NewHealthHandler(a.Logger, a.PostgresDB, a.MongoDB, a.RedisClient, version, a.Config.Server.Env)
+	mux.HandleFunc("/health", healthHandler.Check)
+	mux.HandleFunc("/health/ready", healthHandler.Ready)
+	mux.HandleFunc("/health/live", healthHandler.Live)
+
+	// Metrics endpoint
+	mux.Handle("/metrics", promhttp.Handler())
+
 	// Setup middleware chain
-	handler := middleware.Chain(
+	httpHandler := middleware.Chain(
 		mux,
 		middleware.RecoveryMiddleware(a.Logger),
+		middleware.SecurityMiddleware(),
 		middleware.RequestIDMiddleware(),
+		middleware.TracingMiddleware(),
 		middleware.MetricsMiddleware(),
 		middleware.CORSMiddleware(),
 		middleware.LoggingMiddleware(a.Logger),
 	)
 
+	// Wrap with h2c for HTTP/2 support without TLS (Connect-RPC)
+	h2cHandler := h2c.NewHandler(httpHandler, &http2.Server{})
+
 	// Create HTTP server
 	a.HTTPServer = &http.Server{
 		Addr:         fmt.Sprintf(":%d", a.Config.Server.Port),
-		Handler:      handler,
+		Handler:      h2cHandler,
 		ReadTimeout:  a.Config.Server.ReadTimeout,
 		WriteTimeout: a.Config.Server.WriteTimeout,
 		IdleTimeout:  a.Config.Server.IdleTimeout,
@@ -268,6 +342,24 @@ func (a *Application) SetupHTTPServer() error {
 
 	a.Logger.Info("HTTP server configured", zap.Int("port", a.Config.Server.Port))
 	return nil
+}
+
+// handleWebSocket handles WebSocket upgrade and client management
+func (a *Application) handleWebSocket(w http.ResponseWriter, r *http.Request) {
+	userID := middleware.GetUserIDFromContext(r.Context())
+	username := middleware.GetUsernameFromContext(r.Context())
+
+	conn, err := wsUpgrader.Upgrade(w, r, nil)
+	if err != nil {
+		a.Logger.Error("Failed to upgrade WebSocket connection", zap.Error(err))
+		return
+	}
+
+	client := wsHandler.NewClient(a.WSHub, conn, userID, username)
+	a.WSHub.Register <- client
+
+	go client.WritePump()
+	go client.ReadPump()
 }
 
 // Run starts the HTTP server and blocks until shutdown

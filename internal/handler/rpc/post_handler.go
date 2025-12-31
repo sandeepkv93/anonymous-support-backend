@@ -128,6 +128,19 @@ func (h *PostHandler) DeletePost(
 	ctx context.Context,
 	req *connect.Request[postv1.DeletePostRequest],
 ) (*connect.Response[postv1.DeletePostResponse], error) {
+	// Auth check
+	userID, ok := middleware.GetUserID(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, nil)
+	}
+
+	// Ownership verification is done in service layer
+	err := h.postService.DeletePost(ctx, req.Msg.PostId, userID)
+	if err != nil {
+		// Service already checks ownership - return appropriate error
+		return nil, connect.NewError(connect.CodePermissionDenied, err)
+	}
+
 	res := connect.NewResponse(&postv1.DeletePostResponse{
 		Success: true,
 	})
@@ -139,6 +152,16 @@ func (h *PostHandler) UpdatePostUrgency(
 	ctx context.Context,
 	req *connect.Request[postv1.UpdatePostUrgencyRequest],
 ) (*connect.Response[postv1.UpdatePostUrgencyResponse], error) {
+	_, ok := middleware.GetUserID(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, nil)
+	}
+
+	err := h.postService.UpdatePostUrgency(ctx, req.Msg.PostId, int(req.Msg.UrgencyLevel))
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
 	res := connect.NewResponse(&postv1.UpdatePostUrgencyResponse{
 		Success: true,
 	})

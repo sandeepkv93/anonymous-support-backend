@@ -5,7 +5,9 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
 	"github.com/yourorg/anonymous-support/internal/domain"
+	"github.com/yourorg/anonymous-support/internal/pkg/transaction"
 	"github.com/yourorg/anonymous-support/internal/repository/mongodb"
 	"github.com/yourorg/anonymous-support/internal/repository/postgres"
 )
@@ -13,15 +15,18 @@ import (
 type CircleService struct {
 	circleRepo *postgres.CircleRepository
 	postRepo   *mongodb.PostRepository
+	txManager  *transaction.Manager
 }
 
 func NewCircleService(
 	circleRepo *postgres.CircleRepository,
 	postRepo *mongodb.PostRepository,
+	txManager *transaction.Manager,
 ) *CircleService {
 	return &CircleService{
 		circleRepo: circleRepo,
 		postRepo:   postRepo,
+		txManager:  txManager,
 	}
 }
 
@@ -31,26 +36,36 @@ func (s *CircleService) CreateCircle(ctx context.Context, userID, name, descript
 		return "", err
 	}
 
-	circle := &domain.Circle{
-		ID:          uuid.New(),
-		Name:        name,
-		Description: description,
-		Category:    category,
-		MaxMembers:  maxMembers,
-		MemberCount: 0,
-		IsPrivate:   isPrivate,
-		CreatedBy:   uid,
-	}
+	circleID := uuid.New()
 
-	if err := s.circleRepo.Create(ctx, circle); err != nil {
+	// Use transaction to ensure atomicity of circle creation and auto-join
+	err = s.txManager.WithTransaction(ctx, func(tx *sqlx.Tx) error {
+		// Create circle
+		circleQuery := `
+			INSERT INTO circles (id, name, description, category, max_members, member_count, is_private, created_by, created_at, updated_at)
+			VALUES ($1, $2, $3, $4, $5, 1, $6, $7, NOW(), NOW())
+		`
+		if _, err := tx.ExecContext(ctx, circleQuery, circleID, name, description, category, maxMembers, isPrivate, uid); err != nil {
+			return fmt.Errorf("failed to create circle: %w", err)
+		}
+
+		// Auto-join creator to circle
+		membershipQuery := `
+			INSERT INTO circle_memberships (circle_id, user_id, joined_at)
+			VALUES ($1, $2, NOW())
+		`
+		if _, err := tx.ExecContext(ctx, membershipQuery, circleID, uid); err != nil {
+			return fmt.Errorf("failed to join creator to circle: %w", err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
 		return "", err
 	}
 
-	if err := s.circleRepo.JoinCircle(ctx, circle.ID, uid); err != nil {
-		return "", err
-	}
-
-	return circle.ID.String(), nil
+	return circleID.String(), nil
 }
 
 func (s *CircleService) JoinCircle(ctx context.Context, userID, circleID string) error {
@@ -64,16 +79,45 @@ func (s *CircleService) JoinCircle(ctx context.Context, userID, circleID string)
 		return err
 	}
 
-	circle, err := s.circleRepo.GetByID(ctx, cid)
-	if err != nil {
-		return err
-	}
+	// Use transaction with row locking to prevent race conditions
+	return s.txManager.WithTransaction(ctx, func(tx *sqlx.Tx) error {
+		// Lock the circle row for update and check capacity
+		var memberCount, maxMembers int
+		lockQuery := `SELECT member_count, max_members FROM circles WHERE id = $1 FOR UPDATE`
+		if err := tx.QueryRowContext(ctx, lockQuery, cid).Scan(&memberCount, &maxMembers); err != nil {
+			return fmt.Errorf("circle not found: %w", err)
+		}
 
-	if circle.MemberCount >= circle.MaxMembers {
-		return fmt.Errorf("circle is full")
-	}
+		// Check if circle is full
+		if memberCount >= maxMembers {
+			return fmt.Errorf("circle is full")
+		}
 
-	return s.circleRepo.JoinCircle(ctx, cid, uid)
+		// Check if already a member
+		var existingCount int
+		checkQuery := `SELECT COUNT(*) FROM circle_memberships WHERE circle_id = $1 AND user_id = $2`
+		if err := tx.QueryRowContext(ctx, checkQuery, cid, uid).Scan(&existingCount); err != nil {
+			return fmt.Errorf("failed to check existing membership: %w", err)
+		}
+
+		if existingCount > 0 {
+			return fmt.Errorf("already a member of this circle")
+		}
+
+		// Create membership
+		insertQuery := `INSERT INTO circle_memberships (circle_id, user_id, joined_at) VALUES ($1, $2, NOW())`
+		if _, err := tx.ExecContext(ctx, insertQuery, cid, uid); err != nil {
+			return fmt.Errorf("failed to create membership: %w", err)
+		}
+
+		// Increment member count
+		updateQuery := `UPDATE circles SET member_count = member_count + 1, updated_at = NOW() WHERE id = $1`
+		if _, err := tx.ExecContext(ctx, updateQuery, cid); err != nil {
+			return fmt.Errorf("failed to update member count: %w", err)
+		}
+
+		return nil
+	})
 }
 
 func (s *CircleService) LeaveCircle(ctx context.Context, userID, circleID string) error {
@@ -87,7 +131,32 @@ func (s *CircleService) LeaveCircle(ctx context.Context, userID, circleID string
 		return err
 	}
 
-	return s.circleRepo.LeaveCircle(ctx, cid, uid)
+	// Use transaction to ensure atomicity of membership removal and count update
+	return s.txManager.WithTransaction(ctx, func(tx *sqlx.Tx) error {
+		// Delete membership
+		deleteQuery := `DELETE FROM circle_memberships WHERE circle_id = $1 AND user_id = $2`
+		result, err := tx.ExecContext(ctx, deleteQuery, cid, uid)
+		if err != nil {
+			return fmt.Errorf("failed to delete membership: %w", err)
+		}
+
+		rowsAffected, err := result.RowsAffected()
+		if err != nil {
+			return fmt.Errorf("failed to get rows affected: %w", err)
+		}
+
+		if rowsAffected == 0 {
+			return fmt.Errorf("not a member of this circle")
+		}
+
+		// Decrement member count
+		updateQuery := `UPDATE circles SET member_count = member_count - 1, updated_at = NOW() WHERE id = $1`
+		if _, err := tx.ExecContext(ctx, updateQuery, cid); err != nil {
+			return fmt.Errorf("failed to update member count: %w", err)
+		}
+
+		return nil
+	})
 }
 
 func (s *CircleService) GetCircleMembers(ctx context.Context, circleID string, limit, offset int) ([]*domain.CircleMembership, error) {

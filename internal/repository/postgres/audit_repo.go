@@ -17,6 +17,19 @@ func NewAuditRepository(db *sqlx.DB) *AuditRepository {
 	return &AuditRepository{db: db}
 }
 
+// CreateAuditLog implements repository.AuditRepository interface
+func (r *AuditRepository) CreateAuditLog(ctx context.Context, log *domain.AuditLog) error {
+	return r.Log(ctx, log)
+}
+
+// GetAuditLogs implements repository.AuditRepository interface
+func (r *AuditRepository) GetAuditLogs(ctx context.Context, filters map[string]interface{}, limit, offset int) ([]*domain.AuditLog, error) {
+	query := `SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT $1 OFFSET $2`
+	var logs []*domain.AuditLog
+	err := r.db.SelectContext(ctx, &logs, query, limit, offset)
+	return logs, err
+}
+
 // Log creates a new audit log entry
 func (r *AuditRepository) Log(ctx context.Context, log *domain.AuditLog) error {
 	query := `

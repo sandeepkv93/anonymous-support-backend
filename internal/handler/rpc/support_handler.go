@@ -129,11 +129,21 @@ func (h *SupportHandler) GetSupportStats(
 	ctx context.Context,
 	req *connect.Request[supportv1.GetSupportStatsRequest],
 ) (*connect.Response[supportv1.GetSupportStatsResponse], error) {
+	userID, ok := middleware.GetUserID(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, nil)
+	}
+
+	given, received, strengthPoints, peopleHelped, err := h.supportService.GetSupportStats(ctx, userID)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
 	res := connect.NewResponse(&supportv1.GetSupportStatsResponse{
-		TotalResponsesGiven:    0,
-		TotalResponsesReceived: 0,
-		StrengthPoints:         0,
-		PeopleHelped:           0,
+		TotalResponsesGiven:    int32(given),
+		TotalResponsesReceived: int32(received),
+		StrengthPoints:         int32(strengthPoints),
+		PeopleHelped:           int32(peopleHelped),
 	})
 
 	return res, nil

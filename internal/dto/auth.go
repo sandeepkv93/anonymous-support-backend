@@ -77,6 +77,7 @@ type AuthResponse struct {
 	AccessToken  string
 	RefreshToken string
 	User         *UserDTO
+	ExpiresIn    int64 // Token expiration in seconds
 }
 
 // UserDTO represents user data for responses

@@ -227,3 +227,16 @@ func (m *MongoMigrator) Status(ctx context.Context) error {
 
 	return nil
 }
+
+// RunMongoDBMigrations is a convenience function to run all migrations
+func RunMongoDBMigrations(ctx context.Context, db *mongo.Database) error {
+	logger, _ := zap.NewProduction()
+	migrator := NewMongoMigrator(db, logger)
+
+	// Register all migrations
+	for _, migration := range GetMongoMigrations() {
+		migrator.Register(migration)
+	}
+
+	return migrator.Up(ctx)
+}

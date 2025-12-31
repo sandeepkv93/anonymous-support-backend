@@ -5,6 +5,7 @@ import (
 
 	"connectrpc.com/connect"
 	moderationv1 "github.com/yourorg/anonymous-support/gen/moderation/v1"
+	"github.com/yourorg/anonymous-support/internal/domain"
 	"github.com/yourorg/anonymous-support/internal/middleware"
 	"github.com/yourorg/anonymous-support/internal/service"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -52,6 +53,12 @@ func (h *ModerationHandler) GetReports(
 	ctx context.Context,
 	req *connect.Request[moderationv1.GetReportsRequest],
 ) (*connect.Response[moderationv1.GetReportsResponse], error) {
+	// RBAC: Require moderator or higher
+	role := middleware.GetUserRoleFromContext(ctx)
+	if !hasPermission(domain.Role(role), domain.RoleModerator) {
+		return nil, connect.NewError(connect.CodePermissionDenied, nil)
+	}
+
 	var status *string
 	if req.Msg.Status != nil {
 		status = req.Msg.Status
@@ -98,6 +105,12 @@ func (h *ModerationHandler) ModerateContent(
 		return nil, connect.NewError(connect.CodeUnauthenticated, nil)
 	}
 
+	// RBAC: Require moderator or higher
+	role := middleware.GetUserRoleFromContext(ctx)
+	if !hasPermission(domain.Role(role), domain.RoleModerator) {
+		return nil, connect.NewError(connect.CodePermissionDenied, nil)
+	}
+
 	err := h.moderationService.ModerateContent(
 		ctx,
 		req.Msg.ReportId,
@@ -113,4 +126,18 @@ func (h *ModerationHandler) ModerateContent(
 	})
 
 	return res, nil
+}
+
+// hasPermission checks if user role has permission for required role
+func hasPermission(userRole, requiredRole domain.Role) bool {
+	roleHierarchy := map[domain.Role]int{
+		domain.RoleUser:      1,
+		domain.RoleModerator: 2,
+		domain.RoleAdmin:     3,
+	}
+
+	userLevel := roleHierarchy[userRole]
+	requiredLevel := roleHierarchy[requiredRole]
+
+	return userLevel >= requiredLevel
 }

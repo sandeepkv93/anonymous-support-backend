@@ -65,9 +65,17 @@ type ModerationRepository interface {
 
 // SessionRepository defines the interface for session management
 type SessionRepository interface {
+	// Token storage and retrieval
 	StoreRefreshToken(ctx context.Context, userID, token string, expiry time.Duration) error
 	GetRefreshToken(ctx context.Context, userID string) (string, error)
 	DeleteRefreshToken(ctx context.Context, userID string) error
+
+	// Token rotation and validation
+	ValidateRefreshToken(ctx context.Context, userID, token string) (bool, error)
+	RevokeRefreshToken(ctx context.Context, userID, token string) error
+	RevokeAllRefreshTokens(ctx context.Context, userID string) error
+
+	// User online status
 	SetUserOnline(ctx context.Context, userID string, ttl time.Duration) error
 	IsUserOnline(ctx context.Context, userID string) (bool, error)
 }
@@ -99,4 +107,20 @@ type AnalyticsRepository interface {
 	UpdateStreak(ctx context.Context, userID uuid.UUID, hasRelapsed bool) error
 	IncrementCravings(ctx context.Context, userID uuid.UUID, resisted bool) error
 	AddMilestone(ctx context.Context, userID uuid.UUID, milestone string) error
+}
+
+// AuditRepository defines the interface for audit logging
+type AuditRepository interface {
+	CreateAuditLog(ctx context.Context, log *domain.AuditLog) error
+	GetAuditLogs(ctx context.Context, filters map[string]interface{}, limit, offset int) ([]*domain.AuditLog, error)
+}
+
+// InviteRepository defines the interface for circle invites
+type InviteRepository interface {
+	Create(ctx context.Context, invite *domain.Invite) error
+	GetByID(ctx context.Context, id uuid.UUID) (*domain.Invite, error)
+	GetByCode(ctx context.Context, code string) (*domain.Invite, error)
+	GetByCircleID(ctx context.Context, circleID uuid.UUID) ([]*domain.Invite, error)
+	IncrementUsedCount(ctx context.Context, id uuid.UUID) error
+	Deactivate(ctx context.Context, id uuid.UUID) error
 }

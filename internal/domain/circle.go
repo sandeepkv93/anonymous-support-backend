@@ -25,3 +25,16 @@ type CircleMembership struct {
 	JoinedAt time.Time `db:"joined_at" json:"joined_at"`
 	Role     string    `db:"role" json:"role"`
 }
+
+// Invite represents a circle invitation
+type Invite struct {
+	ID        uuid.UUID `db:"id" json:"id"`
+	CircleID  uuid.UUID `db:"circle_id" json:"circle_id"`
+	Code      string    `db:"code" json:"code"`
+	CreatedBy uuid.UUID `db:"created_by" json:"created_by"`
+	MaxUses   int       `db:"max_uses" json:"max_uses"`       // 0 = unlimited
+	UsedCount int       `db:"used_count" json:"used_count"`
+	ExpiresAt time.Time `db:"expires_at" json:"expires_at"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	IsActive  bool      `db:"is_active" json:"is_active"`
+}
