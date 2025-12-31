@@ -57,7 +57,7 @@ func (r *CircleRepository) List(ctx context.Context, category *string, limit, of
 	return circles, err
 }
 
-func (r *CircleRepository) JoinCircle(ctx context.Context, membership *domain.CircleMembership) error {
+func (r *CircleRepository) JoinCircle(ctx context.Context, circleID, userID uuid.UUID) error {
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return err
@@ -67,16 +67,16 @@ func (r *CircleRepository) JoinCircle(ctx context.Context, membership *domain.Ci
 	query := `
 		INSERT INTO circle_memberships (id, circle_id, user_id, role)
 		VALUES ($1, $2, $3, $4)
-		RETURNING joined_at
 	`
-	if err := tx.QueryRowContext(ctx, query,
-		membership.ID, membership.CircleID, membership.UserID, membership.Role,
-	).Scan(&membership.JoinedAt); err != nil {
+	membershipID := uuid.New()
+	if _, err := tx.ExecContext(ctx, query,
+		membershipID, circleID, userID, "member",
+	); err != nil {
 		return err
 	}
 
 	updateQuery := `UPDATE circles SET member_count = member_count + 1 WHERE id = $1`
-	if _, err := tx.ExecContext(ctx, updateQuery, membership.CircleID); err != nil {
+	if _, err := tx.ExecContext(ctx, updateQuery, circleID); err != nil {
 		return err
 	}
 
@@ -103,10 +103,10 @@ func (r *CircleRepository) LeaveCircle(ctx context.Context, circleID, userID uui
 	return tx.Commit()
 }
 
-func (r *CircleRepository) GetMembers(ctx context.Context, circleID uuid.UUID, limit, offset int) ([]*domain.CircleMembership, error) {
-	members := []*domain.CircleMembership{}
+func (r *CircleRepository) GetMembers(ctx context.Context, circleID uuid.UUID, limit, offset int) ([]uuid.UUID, error) {
+	members := []uuid.UUID{}
 	query := `
-		SELECT * FROM circle_memberships
+		SELECT user_id FROM circle_memberships
 		WHERE circle_id = $1
 		ORDER BY joined_at DESC
 		LIMIT $2 OFFSET $3
@@ -120,4 +120,11 @@ func (r *CircleRepository) IsMember(ctx context.Context, circleID, userID uuid.U
 	query := `SELECT EXISTS(SELECT 1 FROM circle_memberships WHERE circle_id = $1 AND user_id = $2)`
 	err := r.db.GetContext(ctx, &exists, query, circleID, userID)
 	return exists, err
+}
+
+func (r *CircleRepository) GetMemberCount(ctx context.Context, circleID uuid.UUID) (int, error) {
+	var count int
+	query := `SELECT COUNT(*) FROM circle_memberships WHERE circle_id = $1`
+	err := r.db.GetContext(ctx, &count, query, circleID)
+	return count, err
 }

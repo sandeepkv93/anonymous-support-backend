@@ -94,3 +94,7 @@ func (r *RealtimeRepository) CheckRateLimit(ctx context.Context, userID, action 
 
 	return count <= int64(limit), nil
 }
+
+func (r *RealtimeRepository) AddSupporter(ctx context.Context, postID, userID string) error {
+	return r.AddSupporterToPost(ctx, postID, userID)
+}

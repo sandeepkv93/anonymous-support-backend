@@ -64,5 +64,5 @@ func (s *ModerationService) ModerateContent(ctx context.Context, reportID, revie
 		status = "reviewed"
 	}
 
-	return s.modRepo.UpdateReportStatus(ctx, rid, status, uid)
+	return s.modRepo.UpdateReportStatus(ctx, rid, status, uid, "")
 }

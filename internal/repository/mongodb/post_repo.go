@@ -103,7 +103,7 @@ func (r *PostRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (r *PostRepository) UpdateUrgency(ctx context.Context, id string, urgencyLevel int) error {
+func (r *PostRepository) UpdateUrgency(ctx context.Context, id string, urgencyLevel int32) error {
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return fmt.Errorf("invalid post ID")

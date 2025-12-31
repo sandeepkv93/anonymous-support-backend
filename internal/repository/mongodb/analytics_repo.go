@@ -93,3 +93,7 @@ func (r *AnalyticsRepository) IncrementCravings(ctx context.Context, userID stri
 	_, err := r.trackers.UpdateOne(ctx, filter, update, opts)
 	return err
 }
+
+func (r *AnalyticsRepository) AddMilestone(ctx context.Context, userID string, milestone domain.Milestone) error {
+	return nil
+}

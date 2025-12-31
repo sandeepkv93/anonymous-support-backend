@@ -113,15 +113,13 @@ func (a *Application) wireServices() error {
 		a.UserRepo,
 		a.SessionRepo,
 		a.JWTManager,
-		a.Config,
-		a.Logger,
+		a.EncryptionManager,
 	)
 
 	// User service
 	a.UserService = service.NewUserService(
 		a.UserRepo,
 		a.AnalyticsRepo,
-		a.Logger,
 	)
 
 	// Post service

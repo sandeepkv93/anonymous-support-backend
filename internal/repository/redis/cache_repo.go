@@ -24,7 +24,11 @@ func (r *CacheRepository) Set(ctx context.Context, key string, value interface{}
 	return r.client.Set(ctx, key, data, ttl).Err()
 }
 
-func (r *CacheRepository) Get(ctx context.Context, key string, dest interface{}) error {
+func (r *CacheRepository) Get(ctx context.Context, key string) (string, error) {
+	return r.client.Get(ctx, key).Result()
+}
+
+func (r *CacheRepository) GetJSON(ctx context.Context, key string, dest interface{}) error {
 	data, err := r.client.Get(ctx, key).Bytes()
 	if err == redis.Nil {
 		return nil

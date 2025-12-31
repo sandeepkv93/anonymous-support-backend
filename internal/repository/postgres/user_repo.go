@@ -50,6 +50,16 @@ func (r *UserRepository) GetByUsername(ctx context.Context, username string) (*d
 	return &user, err
 }
 
+func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
+	var user domain.User
+	query := `SELECT * FROM users WHERE email = $1 AND is_banned = false`
+	err := r.db.GetContext(ctx, &user, query, email)
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("user not found")
+	}
+	return &user, err
+}
+
 func (r *UserRepository) UpdateLastActive(ctx context.Context, userID uuid.UUID) error {
 	query := `UPDATE users SET last_active_at = NOW() WHERE id = $1`
 	_, err := r.db.ExecContext(ctx, query, userID)

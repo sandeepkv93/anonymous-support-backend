@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/yourorg/anonymous-support/internal/domain"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -21,7 +22,7 @@ func NewSupportRepository(db *mongo.Database) *SupportRepository {
 	}
 }
 
-func (r *SupportRepository) CreateResponse(ctx context.Context, response *domain.SupportResponse) error {
+func (r *SupportRepository) Create(ctx context.Context, response *domain.SupportResponse) error {
 	response.ID = primitive.NewObjectID()
 	response.CreatedAt = time.Now()
 
@@ -29,8 +30,12 @@ func (r *SupportRepository) CreateResponse(ctx context.Context, response *domain
 	return err
 }
 
-func (r *SupportRepository) GetResponses(ctx context.Context, postID string, limit, offset int) ([]*domain.SupportResponse, error) {
-	filter := bson.M{"post_id": postID}
+func (r *SupportRepository) CreateResponse(ctx context.Context, response *domain.SupportResponse) error {
+	return r.Create(ctx, response)
+}
+
+func (r *SupportRepository) GetByPostID(ctx context.Context, postID primitive.ObjectID, limit, offset int) ([]*domain.SupportResponse, error) {
+	filter := bson.M{"post_id": postID.Hex()}
 	opts := options.Find().
 		SetSort(bson.D{{Key: "created_at", Value: -1}}).
 		SetLimit(int64(limit)).
@@ -50,9 +55,25 @@ func (r *SupportRepository) GetResponses(ctx context.Context, postID string, lim
 	return responses, nil
 }
 
-func (r *SupportRepository) GetResponseCount(ctx context.Context, postID string) (int64, error) {
-	count, err := r.responses.CountDocuments(ctx, bson.M{"post_id": postID})
+func (r *SupportRepository) GetResponses(ctx context.Context, postID string, limit, offset int) ([]*domain.SupportResponse, error) {
+	objectID, err := primitive.ObjectIDFromHex(postID)
+	if err != nil {
+		return nil, err
+	}
+	return r.GetByPostID(ctx, objectID, limit, offset)
+}
+
+func (r *SupportRepository) CountByPostID(ctx context.Context, postID primitive.ObjectID) (int64, error) {
+	count, err := r.responses.CountDocuments(ctx, bson.M{"post_id": postID.Hex()})
 	return count, err
+}
+
+func (r *SupportRepository) GetResponseCount(ctx context.Context, postID string) (int64, error) {
+	objectID, err := primitive.ObjectIDFromHex(postID)
+	if err != nil {
+		return 0, err
+	}
+	return r.CountByPostID(ctx, objectID)
 }
 
 func (r *SupportRepository) GetUserStats(ctx context.Context, userID string) (given, received int64, err error) {
@@ -62,4 +83,8 @@ func (r *SupportRepository) GetUserStats(ctx context.Context, userID string) (gi
 	}
 
 	return given, 0, nil
+}
+
+func (r *SupportRepository) GetByUserID(ctx context.Context, userID uuid.UUID, limit, offset int) ([]*domain.SupportResponse, error) {
+	return []*domain.SupportResponse{}, nil
 }

@@ -93,5 +93,5 @@ func (s *PostService) DeletePost(ctx context.Context, postID, userID string) err
 }
 
 func (s *PostService) UpdatePostUrgency(ctx context.Context, postID string, urgencyLevel int) error {
-	return s.postRepo.UpdateUrgency(ctx, postID, urgencyLevel)
+	return s.postRepo.UpdateUrgency(ctx, postID, int32(urgencyLevel))
 }

@@ -57,25 +57,34 @@ func (r *ModerationRepository) GetReportByID(ctx context.Context, id uuid.UUID) 
 	return &report, err
 }
 
-func (r *ModerationRepository) UpdateReportStatus(ctx context.Context, reportID uuid.UUID, status string, reviewerID uuid.UUID) error {
+func (r *ModerationRepository) UpdateReportStatus(ctx context.Context, id uuid.UUID, status string, reviewedBy uuid.UUID, notes string) error {
 	query := `
 		UPDATE content_reports
 		SET status = $1, reviewed_by = $2, reviewed_at = NOW()
 		WHERE id = $3
 	`
-	_, err := r.db.ExecContext(ctx, query, status, reviewerID, reportID)
+	_, err := r.db.ExecContext(ctx, query, status, reviewedBy, id)
 	return err
 }
 
-func (r *ModerationRepository) CreateBlock(ctx context.Context, block *domain.UserBlock) error {
+func (r *ModerationRepository) ListReports(ctx context.Context, status *string, limit, offset int) ([]*domain.ContentReport, error) {
+	return r.GetReports(ctx, status, limit, offset)
+}
+
+func (r *ModerationRepository) CreateBlock(ctx context.Context, blockerID, blockedID uuid.UUID) error {
 	query := `
 		INSERT INTO user_blocks (id, blocker_id, blocked_id)
 		VALUES ($1, $2, $3)
-		RETURNING created_at
 	`
-	return r.db.QueryRowContext(ctx, query,
-		block.ID, block.BlockerID, block.BlockedID,
-	).Scan(&block.CreatedAt)
+	blockID := uuid.New()
+	_, err := r.db.ExecContext(ctx, query, blockID, blockerID, blockedID)
+	return err
+}
+
+func (r *ModerationRepository) RemoveBlock(ctx context.Context, blockerID, blockedID uuid.UUID) error {
+	query := `DELETE FROM user_blocks WHERE blocker_id = $1 AND blocked_id = $2`
+	_, err := r.db.ExecContext(ctx, query, blockerID, blockedID)
+	return err
 }
 
 func (r *ModerationRepository) IsBlocked(ctx context.Context, blockerID, blockedID uuid.UUID) (bool, error) {
