@@ -153,6 +153,15 @@ jobs:
         with:
           go-version: '1.21'
 
+      - name: Install buf
+        run: go install github.com/bufbuild/buf/cmd/buf@latest
+
+      - name: Generate proto code
+        run: |
+          buf generate
+          mv gen/proto/* gen/
+          rmdir gen/proto
+
       - name: Run Gosec Security Scanner
         uses: securego/gosec@master
         with:
