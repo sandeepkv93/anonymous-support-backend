@@ -23,45 +23,45 @@ func NewProgressService(analyticsRepo repository.AnalyticsRepository, postRepo r
 
 // ProgressDashboard represents a user's progress dashboard
 type ProgressDashboard struct {
-	UserID           string                   `json:"user_id"`
-	CurrentStreak    int                      `json:"current_streak"`
-	LongestStreak    int                      `json:"longest_streak"`
-	TotalDaysClean   int                      `json:"total_days_clean"`
-	Milestones       []string                 `json:"milestones"`
-	CravingsResisted int                      `json:"cravings_resisted"`
-	TotalCravings    int                      `json:"total_cravings"`
-	SupportGiven     int                      `json:"support_given"`
-	SupportReceived  int                      `json:"support_received"`
-	RelapsePattern   *RelapsePattern          `json:"relapse_pattern"`
-	WeeklyProgress   []DayProgress            `json:"weekly_progress"`
-	Achievements     []Achievement            `json:"achievements"`
+	UserID           string          `json:"user_id"`
+	CurrentStreak    int             `json:"current_streak"`
+	LongestStreak    int             `json:"longest_streak"`
+	TotalDaysClean   int             `json:"total_days_clean"`
+	Milestones       []string        `json:"milestones"`
+	CravingsResisted int             `json:"cravings_resisted"`
+	TotalCravings    int             `json:"total_cravings"`
+	SupportGiven     int             `json:"support_given"`
+	SupportReceived  int             `json:"support_received"`
+	RelapsePattern   *RelapsePattern `json:"relapse_pattern"`
+	WeeklyProgress   []DayProgress   `json:"weekly_progress"`
+	Achievements     []Achievement   `json:"achievements"`
 }
 
 // RelapsePattern analyzes user's relapse patterns
 type RelapsePattern struct {
-	TotalRelapses      int                  `json:"total_relapses"`
-	AverageTimeClean   float64              `json:"average_time_clean"` // in days
-	HighRiskTimeOfDay  string               `json:"high_risk_time_of_day"`
-	HighRiskDayOfWeek  string               `json:"high_risk_day_of_week"`
-	CommonTriggers     []string             `json:"common_triggers"`
-	RecentRelapses     []RelapseEvent       `json:"recent_relapses"`
+	TotalRelapses     int            `json:"total_relapses"`
+	AverageTimeClean  float64        `json:"average_time_clean"` // in days
+	HighRiskTimeOfDay string         `json:"high_risk_time_of_day"`
+	HighRiskDayOfWeek string         `json:"high_risk_day_of_week"`
+	CommonTriggers    []string       `json:"common_triggers"`
+	RecentRelapses    []RelapseEvent `json:"recent_relapses"`
 }
 
 // RelapseEvent represents a single relapse
 type RelapseEvent struct {
-	Date        time.Time `json:"date"`
-	DaysClean   int       `json:"days_clean"`
-	Trigger     string    `json:"trigger,omitempty"`
-	TimeOfDay   string    `json:"time_of_day"`
+	Date      time.Time `json:"date"`
+	DaysClean int       `json:"days_clean"`
+	Trigger   string    `json:"trigger,omitempty"`
+	TimeOfDay string    `json:"time_of_day"`
 }
 
 // DayProgress represents progress for a single day
 type DayProgress struct {
-	Date            time.Time `json:"date"`
-	CheckedIn       bool      `json:"checked_in"`
-	CravingsCount   int       `json:"cravings_count"`
-	SupportGiven    int       `json:"support_given"`
-	MoodScore       int       `json:"mood_score"` // 1-10
+	Date          time.Time `json:"date"`
+	CheckedIn     bool      `json:"checked_in"`
+	CravingsCount int       `json:"cravings_count"`
+	SupportGiven  int       `json:"support_given"`
+	MoodScore     int       `json:"mood_score"` // 1-10
 }
 
 // Achievement represents a milestone achievement
@@ -173,12 +173,12 @@ func (s *ProgressService) analyzeRelapsePattern(tracker *domain.UserTracker) *Re
 	}
 
 	return &RelapsePattern{
-		TotalRelapses:      tracker.TotalRelapses,
-		AverageTimeClean:   avgTimeClean,
-		HighRiskTimeOfDay:  "evening", // TODO: Calculate from actual data
-		HighRiskDayOfWeek:  "weekend", // TODO: Calculate from actual data
-		CommonTriggers:     []string{}, // TODO: Extract from posts/check-ins
-		RecentRelapses:     []RelapseEvent{}, // TODO: Load from relapse history
+		TotalRelapses:     tracker.TotalRelapses,
+		AverageTimeClean:  avgTimeClean,
+		HighRiskTimeOfDay: "evening",        // TODO: Calculate from actual data
+		HighRiskDayOfWeek: "weekend",        // TODO: Calculate from actual data
+		CommonTriggers:    []string{},       // TODO: Extract from posts/check-ins
+		RecentRelapses:    []RelapseEvent{}, // TODO: Load from relapse history
 	}
 }
 

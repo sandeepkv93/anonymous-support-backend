@@ -17,23 +17,23 @@ type AbuseDetector struct {
 
 // SpamThresholds defines limits for spam detection
 type SpamThresholds struct {
-	MaxPostsPerHour     int
-	MaxPostsPerDay      int
-	MaxIdenticalPosts   int
-	MinPostInterval     time.Duration
-	MaxReportsPerDay    int
-	MaxFailedLogins     int
+	MaxPostsPerHour   int
+	MaxPostsPerDay    int
+	MaxIdenticalPosts int
+	MinPostInterval   time.Duration
+	MaxReportsPerDay  int
+	MaxFailedLogins   int
 }
 
 // DefaultThresholds returns default spam detection thresholds
 func DefaultThresholds() SpamThresholds {
 	return SpamThresholds{
-		MaxPostsPerHour:     10,
-		MaxPostsPerDay:      50,
-		MaxIdenticalPosts:   3,
-		MinPostInterval:     30 * time.Second,
-		MaxReportsPerDay:    20,
-		MaxFailedLogins:     5,
+		MaxPostsPerHour:   10,
+		MaxPostsPerDay:    50,
+		MaxIdenticalPosts: 3,
+		MinPostInterval:   30 * time.Second,
+		MaxReportsPerDay:  20,
+		MaxFailedLogins:   5,
 	}
 }
 
@@ -47,11 +47,11 @@ func NewAbuseDetector() *AbuseDetector {
 
 // DetectionResult contains abuse detection results
 type DetectionResult struct {
-	IsAbuse     bool
-	Reason      string
-	Severity    string // low, medium, high, critical
-	Action      string // warn, throttle, block, ban
-	Confidence  float64
+	IsAbuse    bool
+	Reason     string
+	Severity   string // low, medium, high, critical
+	Action     string // warn, throttle, block, ban
+	Confidence float64
 }
 
 // CheckPost checks a post for abusive content

@@ -15,12 +15,12 @@ type FeedRanker struct {
 
 // RankingWeights defines the weights for different ranking factors
 type RankingWeights struct {
-	RecencyWeight     float64 // How recent the post is
-	UrgencyWeight     float64 // Post urgency level
-	EngagementWeight  float64 // Responses and support count
-	CategoryWeight    float64 // User's preferred categories
-	CircleWeight      float64 // Posts from user's circles
-	DiversityPenalty  float64 // Penalty for similar consecutive posts
+	RecencyWeight    float64 // How recent the post is
+	UrgencyWeight    float64 // Post urgency level
+	EngagementWeight float64 // Responses and support count
+	CategoryWeight   float64 // User's preferred categories
+	CircleWeight     float64 // Posts from user's circles
+	DiversityPenalty float64 // Penalty for similar consecutive posts
 }
 
 // DefaultWeights returns the default ranking weights

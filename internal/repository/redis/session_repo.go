@@ -40,7 +40,7 @@ func (r *SessionRepository) StoreRefreshToken(ctx context.Context, userID, token
 	// Store token metadata (issued time, expiry)
 	metaKey := fmt.Sprintf("user:session:%s:token:%s", userID, tokenHash)
 	pipe.HSet(ctx, metaKey, map[string]interface{}{
-		"issued_at": time.Now().Unix(),
+		"issued_at":  time.Now().Unix(),
 		"expires_at": time.Now().Add(expiry).Unix(),
 	})
 	pipe.Expire(ctx, metaKey, expiry)
