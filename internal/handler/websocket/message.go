@@ -25,7 +25,6 @@ type WSMessage struct {
 	Timestamp time.Time       `json:"timestamp"`
 }
 
-
 type SupporterCountEvent struct {
 	PostID    string `json:"post_id"`
 	Count     int    `json:"count"`

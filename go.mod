@@ -1,6 +1,6 @@
 module github.com/yourorg/anonymous-support
 
-go 1.25.4
+go 1.21
 
 require (
 	connectrpc.com/connect v1.19.1
