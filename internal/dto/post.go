@@ -128,8 +128,8 @@ func NewPostDTO(post *domain.Post) *PostDTO {
 		Tags:             post.Context.Tags,
 		Visibility:       post.Visibility,
 		CircleID:         circleID,
-		ResponseCount: int32(post.ResponseCount), //nolint:gosec // Response counts won't overflow int32
-		SupportCount:  int32(post.SupportCount),  //nolint:gosec // Support counts won't overflow int32
+		ResponseCount:    int32(post.ResponseCount), //nolint:gosec // Response counts won't overflow int32
+		SupportCount:     int32(post.SupportCount),  //nolint:gosec // Support counts won't overflow int32
 		CreatedAt:        post.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		ExpiresAt:        expiresAt,
 		IsModerated:      post.IsModerated,

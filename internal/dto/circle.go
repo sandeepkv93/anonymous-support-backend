@@ -110,7 +110,7 @@ func NewCircleDTO(circle *domain.Circle) *CircleDTO {
 		Name:        circle.Name,
 		Description: circle.Description,
 		Category:    circle.Category,
-		MaxMembers:  int32(circle.MaxMembers),   //nolint:gosec // Domain-bounded values won't overflow int32
+		MaxMembers:  int32(circle.MaxMembers),  //nolint:gosec // Domain-bounded values won't overflow int32
 		MemberCount: int32(circle.MemberCount), //nolint:gosec // Domain-bounded values won't overflow int32
 		IsPrivate:   circle.IsPrivate,
 		CreatedBy:   circle.CreatedBy.String(),

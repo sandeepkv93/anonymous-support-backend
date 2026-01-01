@@ -7,7 +7,13 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
+# Install buf for proto generation
+RUN go install github.com/bufbuild/buf/cmd/buf@latest
+
 COPY . .
+
+# Generate proto files
+RUN buf generate && mv gen/proto/* gen/ && rmdir gen/proto
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o server ./cmd/server
 
