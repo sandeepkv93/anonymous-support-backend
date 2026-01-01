@@ -3,6 +3,8 @@ linters-settings:
     enable-all: true
     disable:
       - shadow
+      - fieldalignment  # Micro-optimization not critical for this application
+      - unusedwrite     # Can be overly strict in some valid patterns
   gocyclo:
     min-complexity: 15
   dupl:
