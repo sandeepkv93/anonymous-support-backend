@@ -61,7 +61,6 @@ func (c *Client) ReadPump() {
 		if err := json.Unmarshal(message, &wsMsg); err != nil {
 			continue
 		}
-
 	}
 }
 
