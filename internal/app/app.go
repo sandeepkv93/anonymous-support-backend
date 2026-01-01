@@ -71,13 +71,13 @@ type Application struct {
 	AuditRepo      repository.AuditRepository
 
 	// Services
-	AuthService       *service.AuthService
-	UserService       *service.UserService
-	PostService       *service.PostService
-	SupportService    *service.SupportService
-	CircleService     *service.CircleService
-	ModerationService *service.ModerationService
-	AnalyticsService  *service.AnalyticsService
+	AuthService       service.AuthServiceInterface
+	UserService       service.UserServiceInterface
+	PostService       service.PostServiceInterface
+	SupportService    service.SupportServiceInterface
+	CircleService     service.CircleServiceInterface
+	ModerationService service.ModerationServiceInterface
+	AnalyticsService  service.AnalyticsServiceInterface
 
 	// Infrastructure
 	JWTManager        *jwt.JWTManager
@@ -174,38 +174,31 @@ func (a *Application) wireRepositories() {
 func (a *Application) wireServices() error {
 	// Auth service
 	a.AuthService = service.NewAuthService(
-		a.UserRepo.(*postgres.UserRepository),
-		a.SessionRepo.(*redisrepo.SessionRepository),
+		a.UserRepo,
+		a.SessionRepo,
 		a.JWTManager,
 		a.EncryptionManager,
-		a.AuditRepo.(*postgres.AuditRepository),
+		a.AuditRepo,
 	)
 
 	// User service
-	userRepo := a.UserRepo.(*postgres.UserRepository)
-	analyticsRepo := a.AnalyticsRepo.(*mongodb.AnalyticsRepository)
-	a.UserService = service.NewUserService(userRepo, analyticsRepo)
+	a.UserService = service.NewUserService(a.UserRepo, a.AnalyticsRepo)
 
 	// Post service
-	postRepo := a.PostRepo.(*mongodb.PostRepository)
-	realtimeRepo := a.RealtimeRepo.(*redisrepo.RealtimeRepository)
 	contentFilter := moderator.NewContentFilter(a.Config.Moderation.ProfanityFilterLevel)
-	a.PostService = service.NewPostService(postRepo, realtimeRepo, contentFilter, a.Cache)
+	a.PostService = service.NewPostService(a.PostRepo, a.RealtimeRepo, contentFilter, a.Cache)
 
 	// Support service
-	supportRepo := a.SupportRepo.(*mongodb.SupportRepository)
-	a.SupportService = service.NewSupportService(supportRepo, postRepo, userRepo, realtimeRepo)
+	a.SupportService = service.NewSupportService(a.SupportRepo, a.PostRepo, a.UserRepo, a.RealtimeRepo)
 
 	// Circle service
-	circleRepo := a.CircleRepo.(*postgres.CircleRepository)
-	a.CircleService = service.NewCircleService(circleRepo, postRepo, a.TxManager)
+	a.CircleService = service.NewCircleService(a.CircleRepo, a.PostRepo, a.TxManager)
 
 	// Moderation service
-	modRepo := a.ModerationRepo.(*postgres.ModerationRepository)
-	a.ModerationService = service.NewModerationService(modRepo)
+	a.ModerationService = service.NewModerationService(a.ModerationRepo)
 
 	// Analytics service
-	a.AnalyticsService = service.NewAnalyticsService(analyticsRepo)
+	a.AnalyticsService = service.NewAnalyticsService(a.AnalyticsRepo)
 
 	return nil
 }

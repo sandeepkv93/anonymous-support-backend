@@ -6,11 +6,15 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/yourorg/anonymous-support/internal/domain"
+	"github.com/yourorg/anonymous-support/internal/repository"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+// Compile-time check to ensure SupportRepository implements repository.SupportRepository
+var _ repository.SupportRepository = (*SupportRepository)(nil)
 
 type SupportRepository struct {
 	responses *mongo.Collection

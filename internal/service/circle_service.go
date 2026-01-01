@@ -8,19 +8,18 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/yourorg/anonymous-support/internal/domain"
 	"github.com/yourorg/anonymous-support/internal/pkg/transaction"
-	"github.com/yourorg/anonymous-support/internal/repository/mongodb"
-	"github.com/yourorg/anonymous-support/internal/repository/postgres"
+	"github.com/yourorg/anonymous-support/internal/repository"
 )
 
 type CircleService struct {
-	circleRepo *postgres.CircleRepository
-	postRepo   *mongodb.PostRepository
+	circleRepo repository.CircleRepository
+	postRepo   repository.PostRepository
 	txManager  *transaction.Manager
 }
 
 func NewCircleService(
-	circleRepo *postgres.CircleRepository,
-	postRepo *mongodb.PostRepository,
+	circleRepo repository.CircleRepository,
+	postRepo repository.PostRepository,
 	txManager *transaction.Manager,
 ) *CircleService {
 	return &CircleService{

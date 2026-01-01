@@ -6,11 +6,15 @@ import (
 	"time"
 
 	"github.com/yourorg/anonymous-support/internal/domain"
+	"github.com/yourorg/anonymous-support/internal/repository"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+// Compile-time check to ensure PostRepository implements repository.PostRepository
+var _ repository.PostRepository = (*PostRepository)(nil)
 
 type PostRepository struct {
 	collection *mongo.Collection

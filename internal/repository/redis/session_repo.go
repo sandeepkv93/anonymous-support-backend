@@ -8,7 +8,11 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/yourorg/anonymous-support/internal/repository"
 )
+
+// Compile-time check to ensure SessionRepository implements repository.SessionRepository
+var _ repository.SessionRepository = (*SessionRepository)(nil)
 
 type SessionRepository struct {
 	client *redis.Client

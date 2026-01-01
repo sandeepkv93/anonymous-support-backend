@@ -12,10 +12,10 @@ import (
 )
 
 type CircleHandler struct {
-	circleService *service.CircleService
+	circleService service.CircleServiceInterface
 }
 
-func NewCircleHandler(circleService *service.CircleService) *CircleHandler {
+func NewCircleHandler(circleService service.CircleServiceInterface) *CircleHandler {
 	return &CircleHandler{
 		circleService: circleService,
 	}

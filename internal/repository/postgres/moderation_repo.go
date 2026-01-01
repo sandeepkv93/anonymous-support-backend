@@ -8,7 +8,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/yourorg/anonymous-support/internal/domain"
+	"github.com/yourorg/anonymous-support/internal/repository"
 )
+
+// Compile-time check to ensure ModerationRepository implements repository.ModerationRepository
+var _ repository.ModerationRepository = (*ModerationRepository)(nil)
 
 type ModerationRepository struct {
 	db *sqlx.DB

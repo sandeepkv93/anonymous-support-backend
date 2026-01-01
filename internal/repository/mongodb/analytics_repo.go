@@ -7,11 +7,15 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/yourorg/anonymous-support/internal/domain"
+	"github.com/yourorg/anonymous-support/internal/repository"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+// Compile-time check to ensure AnalyticsRepository implements repository.AnalyticsRepository
+var _ repository.AnalyticsRepository = (*AnalyticsRepository)(nil)
 
 type AnalyticsRepository struct {
 	trackers *mongo.Collection

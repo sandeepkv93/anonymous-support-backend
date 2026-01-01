@@ -5,18 +5,17 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/yourorg/anonymous-support/internal/domain"
-	"github.com/yourorg/anonymous-support/internal/repository/mongodb"
-	"github.com/yourorg/anonymous-support/internal/repository/postgres"
+	"github.com/yourorg/anonymous-support/internal/repository"
 )
 
 type UserService struct {
-	userRepo      *postgres.UserRepository
-	analyticsRepo *mongodb.AnalyticsRepository
+	userRepo      repository.UserRepository
+	analyticsRepo repository.AnalyticsRepository
 }
 
 func NewUserService(
-	userRepo *postgres.UserRepository,
-	analyticsRepo *mongodb.AnalyticsRepository,
+	userRepo repository.UserRepository,
+	analyticsRepo repository.AnalyticsRepository,
 ) *UserService {
 	return &UserService{
 		userRepo:      userRepo,
@@ -41,7 +40,11 @@ func (s *UserService) UpdateProfile(ctx context.Context, userID string, username
 }
 
 func (s *UserService) GetStreak(ctx context.Context, userID string) (*domain.UserTracker, error) {
-	return s.analyticsRepo.GetTracker(ctx, userID)
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, err
+	}
+	return s.analyticsRepo.GetUserTracker(ctx, uid)
 }
 
 func (s *UserService) UpdateStreak(ctx context.Context, userID string, hadRelapse bool) (int, error) {
@@ -52,7 +55,7 @@ func (s *UserService) UpdateStreak(ctx context.Context, userID string, hadRelaps
 	if err := s.analyticsRepo.UpdateStreak(ctx, uid, hadRelapse); err != nil {
 		return 0, err
 	}
-	tracker, err := s.analyticsRepo.GetTracker(ctx, userID)
+	tracker, err := s.analyticsRepo.GetUserTracker(ctx, uid)
 	if err != nil {
 		return 0, err
 	}

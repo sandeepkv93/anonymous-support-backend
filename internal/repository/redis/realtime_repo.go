@@ -7,7 +7,11 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/yourorg/anonymous-support/internal/repository"
 )
+
+// Compile-time check to ensure RealtimeRepository implements repository.RealtimeRepository
+var _ repository.RealtimeRepository = (*RealtimeRepository)(nil)
 
 type RealtimeRepository struct {
 	client *redis.Client

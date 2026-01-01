@@ -6,23 +6,21 @@ import (
 	"github.com/google/uuid"
 	"github.com/yourorg/anonymous-support/internal/domain"
 	"github.com/yourorg/anonymous-support/internal/pkg/validator"
-	"github.com/yourorg/anonymous-support/internal/repository/mongodb"
-	"github.com/yourorg/anonymous-support/internal/repository/postgres"
-	"github.com/yourorg/anonymous-support/internal/repository/redis"
+	"github.com/yourorg/anonymous-support/internal/repository"
 )
 
 type SupportService struct {
-	supportRepo  *mongodb.SupportRepository
-	postRepo     *mongodb.PostRepository
-	userRepo     *postgres.UserRepository
-	realtimeRepo *redis.RealtimeRepository
+	supportRepo  repository.SupportRepository
+	postRepo     repository.PostRepository
+	userRepo     repository.UserRepository
+	realtimeRepo repository.RealtimeRepository
 }
 
 func NewSupportService(
-	supportRepo *mongodb.SupportRepository,
-	postRepo *mongodb.PostRepository,
-	userRepo *postgres.UserRepository,
-	realtimeRepo *redis.RealtimeRepository,
+	supportRepo repository.SupportRepository,
+	postRepo repository.PostRepository,
+	userRepo repository.UserRepository,
+	realtimeRepo repository.RealtimeRepository,
 ) *SupportService {
 	return &SupportService{
 		supportRepo:  supportRepo,

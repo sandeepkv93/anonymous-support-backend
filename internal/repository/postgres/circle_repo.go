@@ -8,7 +8,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/yourorg/anonymous-support/internal/domain"
+	"github.com/yourorg/anonymous-support/internal/repository"
 )
+
+// Compile-time check to ensure CircleRepository implements repository.CircleRepository
+var _ repository.CircleRepository = (*CircleRepository)(nil)
 
 type CircleRepository struct {
 	db *sqlx.DB

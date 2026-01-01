@@ -4,7 +4,9 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/yourorg/anonymous-support/internal/domain"
 	"github.com/yourorg/anonymous-support/internal/dto"
+	"github.com/yourorg/anonymous-support/internal/pkg/feed"
 )
 
 // AuthServiceInterface defines the authentication service interface
@@ -18,48 +20,50 @@ type AuthServiceInterface interface {
 
 // UserServiceInterface defines the user service interface
 type UserServiceInterface interface {
-	GetProfile(ctx context.Context, userID uuid.UUID) (*dto.ProfileDTO, error)
-	UpdateProfile(ctx context.Context, userID uuid.UUID, req *dto.UpdateProfileRequest) (*dto.UserDTO, error)
-	GetStreak(ctx context.Context, userID uuid.UUID) (*dto.StreakDTO, error)
-	UpdateStreak(ctx context.Context, userID uuid.UUID, hasRelapsed bool) (*dto.StreakDTO, error)
+	GetProfile(ctx context.Context, userID string) (*domain.User, error)
+	UpdateProfile(ctx context.Context, userID string, username *string, avatarID *int) error
+	GetStreak(ctx context.Context, userID string) (*domain.UserTracker, error)
+	UpdateStreak(ctx context.Context, userID string, hadRelapse bool) (int, error)
 }
 
 // PostServiceInterface defines the post service interface
 type PostServiceInterface interface {
-	CreatePost(ctx context.Context, userID uuid.UUID, username string, req *dto.CreatePostRequest) (*dto.PostDTO, error)
-	GetPost(ctx context.Context, postID string, viewerID *uuid.UUID) (*dto.PostDTO, error)
-	GetFeed(ctx context.Context, req *dto.GetFeedRequest) (*dto.FeedResponse, error)
-	DeletePost(ctx context.Context, postID string, userID uuid.UUID) error
-	UpdatePostUrgency(ctx context.Context, postID string, userID uuid.UUID, urgencyLevel int32) (*dto.PostDTO, error)
+	CreatePost(ctx context.Context, userID, username string, postType domain.PostType, content string, categories []string, urgencyLevel int, timeContext string, daysSinceRelapse int, tags []string, visibility string, circleID *string) (*domain.Post, error)
+	GetPost(ctx context.Context, postID string) (*domain.Post, error)
+	GetFeed(ctx context.Context, categories []string, circleID *string, postType *domain.PostType, limit, offset int) ([]*domain.Post, error)
+	DeletePost(ctx context.Context, postID, userID string) error
+	UpdatePostUrgency(ctx context.Context, postID string, urgencyLevel int) error
+	GetPersonalizedFeed(ctx context.Context, userPrefs *feed.UserPreferences, limit, offset int) ([]*domain.Post, error)
 }
 
 // SupportServiceInterface defines the support service interface
 type SupportServiceInterface interface {
-	CreateResponse(ctx context.Context, userID uuid.UUID, username string, req *dto.CreateResponseRequest) (*dto.SupportResponseDTO, error)
-	GetResponses(ctx context.Context, req *dto.GetResponsesRequest) (*dto.ResponsesListResponse, error)
-	QuickSupport(ctx context.Context, userID uuid.UUID, postID string) error
-	GetSupportStats(ctx context.Context, userID uuid.UUID) (*dto.SupportStatsDTO, error)
+	CreateResponse(ctx context.Context, userID, username, postID string, responseType domain.ResponseType, content string, voiceNoteURL *string) (string, int, error)
+	GetResponses(ctx context.Context, postID string, limit, offset int) ([]*domain.SupportResponse, error)
+	QuickSupport(ctx context.Context, userID, postID, messageType string) (int, error)
+	GetSupportStats(ctx context.Context, userID string) (given, received int64, strengthPoints, peopleHelped int, error error)
 }
 
 // CircleServiceInterface defines the circle service interface
 type CircleServiceInterface interface {
-	CreateCircle(ctx context.Context, userID uuid.UUID, req *dto.CreateCircleRequest) (*dto.CircleDTO, error)
-	JoinCircle(ctx context.Context, userID uuid.UUID, circleID uuid.UUID) error
-	LeaveCircle(ctx context.Context, userID uuid.UUID, circleID uuid.UUID) error
-	GetCircleMembers(ctx context.Context, req *dto.GetCircleMembersRequest) (*dto.CircleMembersResponse, error)
-	GetCircleFeed(ctx context.Context, circleID uuid.UUID, limit, offset int32) (*dto.FeedResponse, error)
-	GetCircles(ctx context.Context, req *dto.GetCirclesRequest) (*dto.CircleListResponse, error)
+	CreateCircle(ctx context.Context, userID, name, description, category string, maxMembers int, isPrivate bool) (string, error)
+	JoinCircle(ctx context.Context, userID, circleID string) error
+	LeaveCircle(ctx context.Context, userID, circleID string) error
+	GetCircleMembers(ctx context.Context, circleID string, limit, offset int) ([]*domain.CircleMembership, error)
+	GetCircleFeed(ctx context.Context, circleID string, limit, offset int) ([]*domain.Post, error)
+	GetCircles(ctx context.Context, category *string, limit, offset int) ([]*domain.Circle, error)
 }
 
 // ModerationServiceInterface defines the moderation service interface
 type ModerationServiceInterface interface {
-	ReportContent(ctx context.Context, userID uuid.UUID, req *dto.ReportContentRequest) error
-	GetReports(ctx context.Context, req *dto.GetReportsRequest) (*dto.ReportsListResponse, error)
-	ModerateContent(ctx context.Context, moderatorID uuid.UUID, req *dto.ModerateContentRequest) error
+	ReportContent(ctx context.Context, reporterID, contentType, contentID, reason, description string) (string, error)
+	GetReports(ctx context.Context, status *string, limit, offset int) ([]*domain.ContentReport, error)
+	ModerateContent(ctx context.Context, reportID, reviewerID, action string) error
 }
 
 // AnalyticsServiceInterface defines the analytics service interface
 type AnalyticsServiceInterface interface {
-	TrackUserActivity(ctx context.Context, userID uuid.UUID, activityType string, metadata map[string]interface{}) error
-	GetUserMetrics(ctx context.Context, userID uuid.UUID) (map[string]interface{}, error)
+	GetTracker(ctx context.Context, userID string) (*domain.UserTracker, error)
+	UpdateStreak(ctx context.Context, userID string, hadRelapse bool) (int, error)
+	RecordCraving(ctx context.Context, userID string, resisted bool) error
 }

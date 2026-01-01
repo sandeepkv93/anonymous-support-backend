@@ -12,10 +12,10 @@ import (
 )
 
 type ModerationHandler struct {
-	moderationService *service.ModerationService
+	moderationService service.ModerationServiceInterface
 }
 
-func NewModerationHandler(moderationService *service.ModerationService) *ModerationHandler {
+func NewModerationHandler(moderationService service.ModerationServiceInterface) *ModerationHandler {
 	return &ModerationHandler{
 		moderationService: moderationService,
 	}

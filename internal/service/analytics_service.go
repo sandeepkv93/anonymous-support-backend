@@ -5,14 +5,14 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/yourorg/anonymous-support/internal/domain"
-	"github.com/yourorg/anonymous-support/internal/repository/mongodb"
+	"github.com/yourorg/anonymous-support/internal/repository"
 )
 
 type AnalyticsService struct {
-	analyticsRepo *mongodb.AnalyticsRepository
+	analyticsRepo repository.AnalyticsRepository
 }
 
-func NewAnalyticsService(analyticsRepo *mongodb.AnalyticsRepository) *AnalyticsService {
+func NewAnalyticsService(analyticsRepo repository.AnalyticsRepository) *AnalyticsService {
 	return &AnalyticsService{analyticsRepo: analyticsRepo}
 }
 

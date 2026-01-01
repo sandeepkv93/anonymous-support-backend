@@ -8,7 +8,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/yourorg/anonymous-support/internal/domain"
+	"github.com/yourorg/anonymous-support/internal/repository"
 )
+
+// Compile-time check to ensure UserRepository implements repository.UserRepository
+var _ repository.UserRepository = (*UserRepository)(nil)
 
 type UserRepository struct {
 	db *sqlx.DB

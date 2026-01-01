@@ -12,10 +12,10 @@ import (
 )
 
 type SupportHandler struct {
-	supportService *service.SupportService
+	supportService service.SupportServiceInterface
 }
 
-func NewSupportHandler(supportService *service.SupportService) *SupportHandler {
+func NewSupportHandler(supportService service.SupportServiceInterface) *SupportHandler {
 	return &SupportHandler{
 		supportService: supportService,
 	}

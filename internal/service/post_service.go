@@ -11,21 +11,20 @@ import (
 	"github.com/yourorg/anonymous-support/internal/pkg/metrics"
 	"github.com/yourorg/anonymous-support/internal/pkg/moderator"
 	"github.com/yourorg/anonymous-support/internal/pkg/validator"
-	"github.com/yourorg/anonymous-support/internal/repository/mongodb"
-	"github.com/yourorg/anonymous-support/internal/repository/redis"
+	"github.com/yourorg/anonymous-support/internal/repository"
 )
 
 type PostService struct {
-	postRepo      *mongodb.PostRepository
-	realtimeRepo  *redis.RealtimeRepository
+	postRepo      repository.PostRepository
+	realtimeRepo  repository.RealtimeRepository
 	contentFilter *moderator.ContentFilter
 	cache         *cache.Cache
 	feedRanker    *feed.FeedRanker
 }
 
 func NewPostService(
-	postRepo *mongodb.PostRepository,
-	realtimeRepo *redis.RealtimeRepository,
+	postRepo repository.PostRepository,
+	realtimeRepo repository.RealtimeRepository,
 	contentFilter *moderator.ContentFilter,
 	cache *cache.Cache,
 ) *PostService {

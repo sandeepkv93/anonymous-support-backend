@@ -35,9 +35,13 @@ type PostRepository interface {
 // SupportRepository defines the interface for support response persistence
 type SupportRepository interface {
 	Create(ctx context.Context, response *domain.SupportResponse) error
+	CreateResponse(ctx context.Context, response *domain.SupportResponse) error
 	GetByPostID(ctx context.Context, postID primitive.ObjectID, limit, offset int) ([]*domain.SupportResponse, error)
 	GetByUserID(ctx context.Context, userID uuid.UUID, limit, offset int) ([]*domain.SupportResponse, error)
+	GetResponses(ctx context.Context, postID string, limit, offset int) ([]*domain.SupportResponse, error)
 	CountByPostID(ctx context.Context, postID primitive.ObjectID) (int64, error)
+	GetResponseCount(ctx context.Context, postID string) (int64, error)
+	GetUserStats(ctx context.Context, userID string) (given, received int64, err error)
 }
 
 // CircleRepository defines the interface for circle data persistence
@@ -56,6 +60,7 @@ type CircleRepository interface {
 type ModerationRepository interface {
 	CreateReport(ctx context.Context, report *domain.ContentReport) error
 	GetReportByID(ctx context.Context, id uuid.UUID) (*domain.ContentReport, error)
+	GetReports(ctx context.Context, status *string, limit, offset int) ([]*domain.ContentReport, error)
 	ListReports(ctx context.Context, status *string, limit, offset int) ([]*domain.ContentReport, error)
 	UpdateReportStatus(ctx context.Context, id uuid.UUID, status string, reviewedBy uuid.UUID, notes string) error
 	CreateBlock(ctx context.Context, blockerID, blockedID uuid.UUID) error
@@ -86,10 +91,15 @@ type RealtimeRepository interface {
 	GetViewCount(ctx context.Context, postID string) (int64, error)
 	AddSupporter(ctx context.Context, postID, userID string) error
 	GetSupporters(ctx context.Context, postID string) ([]string, error)
-	AddToFeed(ctx context.Context, userID, postID string, score float64) error
+	AddToFeed(ctx context.Context, feedKey, postID string, score float64) error
 	GetFeed(ctx context.Context, userID string, limit int) ([]string, error)
 	PublishNotification(ctx context.Context, channel string, message interface{}) error
 	SubscribeToChannel(ctx context.Context, channel string) error
+	PublishNewPost(ctx context.Context, postID, postType string, categories []string) error
+	PublishNewResponse(ctx context.Context, postID, responseID string) error
+	AddSupporterToPost(ctx context.Context, postID, userID string) error
+	GetSupporterCount(ctx context.Context, postID string) (int64, error)
+	CheckRateLimit(ctx context.Context, userID, action string, limit int, window time.Duration) (bool, error)
 }
 
 // CacheRepository defines the interface for caching
@@ -104,6 +114,7 @@ type CacheRepository interface {
 type AnalyticsRepository interface {
 	CreateUserTracker(ctx context.Context, userID uuid.UUID) error
 	GetUserTracker(ctx context.Context, userID uuid.UUID) (*domain.UserTracker, error)
+	GetTracker(ctx context.Context, userID string) (*domain.UserTracker, error)
 	UpdateStreak(ctx context.Context, userID uuid.UUID, hasRelapsed bool) error
 	IncrementCravings(ctx context.Context, userID uuid.UUID, resisted bool) error
 	AddMilestone(ctx context.Context, userID uuid.UUID, milestone string) error

@@ -7,7 +7,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/yourorg/anonymous-support/internal/domain"
+	"github.com/yourorg/anonymous-support/internal/repository"
 )
+
+// Compile-time check to ensure AuditRepository implements repository.AuditRepository
+var _ repository.AuditRepository = (*AuditRepository)(nil)
 
 type AuditRepository struct {
 	db *sqlx.DB

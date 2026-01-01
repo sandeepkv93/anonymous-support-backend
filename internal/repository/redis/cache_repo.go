@@ -6,7 +6,11 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/yourorg/anonymous-support/internal/repository"
 )
+
+// Compile-time check to ensure CacheRepository implements repository.CacheRepository
+var _ repository.CacheRepository = (*CacheRepository)(nil)
 
 type CacheRepository struct {
 	client *redis.Client

@@ -5,14 +5,14 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/yourorg/anonymous-support/internal/domain"
-	"github.com/yourorg/anonymous-support/internal/repository/postgres"
+	"github.com/yourorg/anonymous-support/internal/repository"
 )
 
 type ModerationService struct {
-	modRepo *postgres.ModerationRepository
+	modRepo repository.ModerationRepository
 }
 
-func NewModerationService(modRepo *postgres.ModerationRepository) *ModerationService {
+func NewModerationService(modRepo repository.ModerationRepository) *ModerationService {
 	return &ModerationService{modRepo: modRepo}
 }
 
