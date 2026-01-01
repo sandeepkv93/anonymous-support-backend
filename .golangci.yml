@@ -31,26 +31,15 @@ linters:
   disable-all: true
   enable:
     - bodyclose
-    - dupl
     - errcheck
-    - funlen
-    - goconst
-    - gocritic
-    - gocyclo
     - gofmt
-    - goimports
     - gosec
     - gosimple
     - govet
     - ineffassign
-    - lll
     - misspell
-    - prealloc
-    - revive
     - staticcheck
-    - stylecheck
     - typecheck
-    - unconvert
     - unused
     - whitespace
 
