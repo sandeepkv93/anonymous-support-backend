@@ -1,7 +1,7 @@
 # Anonymous Support Backend
 
 [![CI](https://github.com/sandeepkv93/anonymous-support-backend/workflows/CI/badge.svg)](https://github.com/sandeepkv93/anonymous-support-backend/actions)
-[![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://go.dev/)
+[![Go Version](https://img.shields.io/badge/Go-1.24+-00ADD8?style=flat&logo=go)](https://go.dev/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A production-ready backend system for an anonymous peer support mobile application where users can post real-time struggles with addictions/cravings and receive immediate community support.
