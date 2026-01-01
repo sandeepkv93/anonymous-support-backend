@@ -102,6 +102,7 @@ Anonymous Support provides:
 
 ## Production-Ready Features
 
+- **Proper Dependency Injection**: Interface-based design with compile-time checks across all layers
 - Connect-RPC API with full service implementation
 - Comprehensive configuration validation
 - Structured logging with request correlation IDs
@@ -272,6 +273,27 @@ graph TB
     MongoRepo --> MongoDB
     RedisRepo --> Redis
 ```
+
+### Architecture Highlights
+
+**Dependency Injection**
+- **Interface-Based Design**: All services depend on repository interfaces, all handlers depend on service interfaces
+- **Constructor Injection**: Dependencies injected via constructors for clarity and testability
+- **Compile-Time Safety**: Interface implementation checks ensure type safety at compile time
+- **Zero Type Assertions**: Clean dependency wiring without runtime type assertions
+- **Testability**: Easy mocking and unit testing through interface boundaries
+
+**Layer Separation**
+- **Handlers**: Accept service interfaces, handle HTTP/RPC protocol concerns
+- **Services**: Depend on repository interfaces, contain business logic
+- **Repositories**: Implement data access interfaces, isolated per database
+- **Clean Boundaries**: No concrete type leakage across layers
+
+**Benefits**
+- Swappable implementations (e.g., PostgreSQL → MySQL)
+- Isolated unit testing with mocks
+- Clear dependency graph
+- Maintainable and scalable codebase
 
 ## Tech Stack
 
@@ -595,12 +617,13 @@ anonymous-support-backend/
 │   │   └── audit.go
 │   ├── dto/                 # Data transfer objects
 │   ├── errors/              # Custom error types
-│   ├── repository/          # Data access layer
-│   │   ├── interfaces.go
-│   │   ├── postgres/        # PostgreSQL repositories
-│   │   ├── mongodb/         # MongoDB repositories
-│   │   └── redis/           # Redis repositories
-│   ├── service/             # Business logic
+│   ├── repository/          # Data access layer (interface-based)
+│   │   ├── interfaces.go    # Repository interfaces (10 interfaces)
+│   │   ├── postgres/        # PostgreSQL repositories (User, Circle, Moderation, Audit)
+│   │   ├── mongodb/         # MongoDB repositories (Post, Support, Analytics)
+│   │   └── redis/           # Redis repositories (Session, Realtime, Cache)
+│   ├── service/             # Business logic (interface-based)
+│   │   ├── interfaces.go    # Service interfaces (7 interfaces)
 │   │   ├── auth_service.go
 │   │   ├── user_service.go
 │   │   ├── post_service.go
@@ -669,6 +692,8 @@ anonymous-support-backend/
 
 ## Testing
 
+The application is designed for testability with interface-based dependency injection:
+
 ```bash
 # Run all tests with race detection
 task test
@@ -688,6 +713,13 @@ go test -v ./internal/service/...
 # Run contract tests
 go test -v ./tests/contract/...
 ```
+
+**Testability Features:**
+- All services accept repository interfaces for easy mocking
+- All handlers accept service interfaces for isolated testing
+- Compile-time interface checks ensure correct implementations
+- No database required for unit tests (mock repositories)
+- Clear separation of concerns for focused testing
 
 ## Security Features
 
