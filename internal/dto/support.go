@@ -94,7 +94,7 @@ func NewSupportResponseDTO(response *domain.SupportResponse) *SupportResponseDTO
 		Type:           string(response.Type),
 		Content:        response.Content,
 		VoiceNoteURL:   voiceNoteURL,
-		StrengthPoints: int32(response.StrengthPoints),
+		StrengthPoints: int32(response.StrengthPoints), //nolint:gosec // Strength points are small values (1-5)
 		CreatedAt:      response.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 	}
 }

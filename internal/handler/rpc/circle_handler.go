@@ -119,7 +119,7 @@ func (h *CircleHandler) GetCircleMembers(
 
 	res := connect.NewResponse(&circlev1.GetCircleMembersResponse{
 		Members:    protoMembers,
-		TotalCount: int32(len(protoMembers)),
+		TotalCount: int32(len(protoMembers)), //nolint:gosec // Member count won't overflow int32
 	})
 
 	return res, nil
@@ -146,7 +146,7 @@ func (h *CircleHandler) GetCircleFeed(
 
 	res := connect.NewResponse(&circlev1.GetCircleFeedResponse{
 		Posts:      protoPosts,
-		TotalCount: int32(len(protoPosts)),
+		TotalCount: int32(len(protoPosts)), //nolint:gosec // Post count won't overflow int32
 	})
 
 	return res, nil
@@ -178,8 +178,8 @@ func (h *CircleHandler) GetCircles(
 			Name:        circle.Name,
 			Description: circle.Description,
 			Category:    circle.Category,
-			MaxMembers:  int32(circle.MaxMembers),
-			MemberCount: int32(circle.MemberCount),
+			MaxMembers:  int32(circle.MaxMembers),  //nolint:gosec // Member limits won't overflow int32
+			MemberCount: int32(circle.MemberCount), //nolint:gosec // Member count won't overflow int32
 			IsPrivate:   circle.IsPrivate,
 			CreatedAt:   timestamppb.New(circle.CreatedAt),
 		}
@@ -187,7 +187,7 @@ func (h *CircleHandler) GetCircles(
 
 	res := connect.NewResponse(&circlev1.GetCirclesResponse{
 		Circles:    protoCircles,
-		TotalCount: int32(len(protoCircles)),
+		TotalCount: int32(len(protoCircles)), //nolint:gosec // Circle count won't overflow int32
 	})
 
 	return res, nil

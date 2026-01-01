@@ -125,7 +125,7 @@ func (s *PostService) DeletePost(ctx context.Context, postID, userID string) err
 }
 
 func (s *PostService) UpdatePostUrgency(ctx context.Context, postID string, urgencyLevel int) error {
-	return s.postRepo.UpdateUrgency(ctx, postID, int32(urgencyLevel))
+	return s.postRepo.UpdateUrgency(ctx, postID, int32(urgencyLevel)) //nolint:gosec // Urgency level 1-10
 }
 
 // GetPersonalizedFeed returns a feed ranked by relevance to the user

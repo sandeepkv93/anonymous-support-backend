@@ -9,6 +9,7 @@ import (
 // AuditEventType represents the type of audit event
 type AuditEventType string
 
+//nolint:gosec // These are event type identifiers, not credentials
 const (
 	AuditEventLogin           AuditEventType = "auth.login"
 	AuditEventLogout          AuditEventType = "auth.logout"

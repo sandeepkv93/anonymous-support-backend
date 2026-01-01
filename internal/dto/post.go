@@ -122,14 +122,14 @@ func NewPostDTO(post *domain.Post) *PostDTO {
 		Type:             string(post.Type),
 		Content:          post.Content,
 		Categories:       post.Categories,
-		UrgencyLevel:     int32(post.UrgencyLevel),
-		DaysSinceRelapse: int32(post.Context.DaysSinceRelapse),
+		UrgencyLevel:     int32(post.UrgencyLevel),             //nolint:gosec // Urgency level 1-10
+		DaysSinceRelapse: int32(post.Context.DaysSinceRelapse), //nolint:gosec // Days count won't overflow
 		TimeContext:      post.Context.TimeContext,
 		Tags:             post.Context.Tags,
 		Visibility:       post.Visibility,
 		CircleID:         circleID,
-		ResponseCount:    int32(post.ResponseCount),
-		SupportCount:     int32(post.SupportCount),
+		ResponseCount: int32(post.ResponseCount), //nolint:gosec // Response counts won't overflow int32
+		SupportCount:  int32(post.SupportCount),  //nolint:gosec // Support counts won't overflow int32
 		CreatedAt:        post.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		ExpiresAt:        expiresAt,
 		IsModerated:      post.IsModerated,

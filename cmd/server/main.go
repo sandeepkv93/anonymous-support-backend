@@ -144,7 +144,7 @@ func initMongoDB(cfg *config.Config, logger *zap.Logger) (*mongo.Database, func(
 
 	// Verify connection
 	if err := client.Ping(context.Background(), nil); err != nil {
-		client.Disconnect(context.Background())
+		_ = client.Disconnect(context.Background())
 		return nil, nil, fmt.Errorf("failed to ping: %w", err)
 	}
 

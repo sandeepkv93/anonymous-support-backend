@@ -235,7 +235,7 @@ func (s *AuthService) RefreshToken(ctx context.Context, refreshToken string) (*d
 	if !isValid {
 		// Token reuse detected! This could be a token theft attempt.
 		// Revoke all refresh tokens for this user as a security measure.
-		s.sessionRepo.RevokeAllRefreshTokens(ctx, userID)
+		_ = s.sessionRepo.RevokeAllRefreshTokens(ctx, userID)
 		return nil, fmt.Errorf("token reuse detected, all sessions revoked for security")
 	}
 

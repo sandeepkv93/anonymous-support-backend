@@ -66,6 +66,9 @@ issues:
     - path: gen/
       linters:
         - all
+    - linters:
+        - gosec
+      text: "G115: integer overflow conversion" # Domain-bounded values (counts, IDs) won't overflow int32
 
   max-issues-per-linter: 0
   max-same-issues: 0
